@@ -1,0 +1,7 @@
+# Per a generar els models (onnx_*.py). NeMo porta torch i transformers.
+nemo_toolkit[asr]
+onnx
+onnxruntime
+onnx_ir
+huggingface_hub
+-r requirements-motor.txt

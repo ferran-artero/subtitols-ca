@@ -1,6 +1,24 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Ferran Artero Merino — vegeu NOTICE
+"""
+FASE 1.1 — Exporta el Conformer (NeMo, RNNT) a ONNX i el quantitza a int8.
 
+NeMo exporta els transductors en dues peces:
+  encoder.onnx        espectrograma mel [1, 80, T]  ->  sortida de l'encoder [1, D, T/4]
+  decoder_joint.onnx  (un instant de l'encoder, últim token, estats LSTM) -> logits + estats nous
+L'espectrograma mel NO va dins de l'ONNX: es calcula a part (a la fase 2 el reescriurem).
+
+Escriu a models_onnx/conformer-ca-es/:
+  encoder.onnx, decoder_joint.onnx            (float32)
+  encoder.int8.onnx, decoder_joint.int8.onnx  (pesos en int8)
+  tokenizer.model, tokens.txt                 (vocabulari SentencePiece)
+  config.json                                 (preprocessador, blank, durada de cada instant...)
+  mel_fb.npy, finestra.npy                    (banc de filtres i finestra, per a la fase 2)
+
+Ús (entorn venv-nemo, amb `pip install onnxruntime`):
+    python eines/onnx_exporta_conformer.py
+    python eines/onnx_exporta_conformer.py --model C:/models/el_meu.nemo --eixida models_onnx/el-meu
+"""
 import argparse
 import json
 from pathlib import Path
@@ -112,7 +130,7 @@ def main():
     print(f"\nFet. Vocabulari {V} + blank (id {V}). Cada instant de l'encoder = {cfg['segons_per_instant']:.3f} s")
     total = sum(mida_mb(p) for p in out.glob("*.int8.onnx"))
     print(f"Mida int8 (encoder + decoder_joint): {total:.0f} MB")
-    print("Següent: python codi/onnx_exporta_puntuadors.py")
+    print("Següent: python eines/onnx_exporta_puntuadors.py")
 
 
 if __name__ == "__main__":
