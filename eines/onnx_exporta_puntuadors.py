@@ -1,6 +1,19 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Ferran Artero Merino — vegeu NOTICE
+"""
+FASE 1.2 — Exporta els puntuadors de text (token-classification) a ONNX i a int8.
 
+Estructura d'eixida (la que espera transformers.js al navegador):
+  models_onnx/<nom>/config.json, tokenizer.json, tokenizer_config.json, ...
+  models_onnx/<nom>/onnx/model.onnx             (float32)
+  models_onnx/<nom>/onnx/model_quantized.onnx   (int8)
+
+Comprova que l'ONNX dona els mateixos logits que PyTorch amb frases de prova.
+
+Ús (entorn venv-nemo, amb `pip install onnxruntime`):
+    python eines/onnx_exporta_puntuadors.py
+    python eines/onnx_exporta_puntuadors.py --models softcatala
+"""
 import argparse
 from pathlib import Path
 
@@ -104,7 +117,7 @@ def main():
     a = ap.parse_args()
     for nom in a.models:
         exporta(nom if nom in MODELS else Path(nom).name, MODELS.get(nom, nom), Path(a.eixida), a.opset)
-    print("\nSegüent: python codi/onnx_baixa_vad.py")
+    print("\nSegüent: python eines/onnx_baixa_vad.py")
 
 
 if __name__ == "__main__":

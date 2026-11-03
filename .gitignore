@@ -229,3 +229,9 @@ venv*/
 *.wav
 *.mp3
 *.mp4
+
+
+models_onnx/
+resultats/
+__pycache__/
+*.pyc

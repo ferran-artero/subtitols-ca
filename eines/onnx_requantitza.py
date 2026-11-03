@@ -1,6 +1,20 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Ferran Artero Merino — vegeu NOTICE
+"""
+FASE 1.5 — Torna a quantitzar els models ONNX ja exportats, amb dues millores:
 
+  1. Per canal (per_channel): cada columna de pesos té la seua pròpia escala en lloc d'una
+     per a tota la matriu. Sol recuperar part de la precisió que es perd en passar a int8.
+  2. També la taula d'embeddings (Gather) dels puntuadors: en la primera versió es quedava
+     en float32 i ocupava ~150 MB per model.
+
+No sobreescriu res: crea fitxers nous al costat dels actuals
+  conformer-ca-es/encoder.int8pc.onnx, decoder_joint.int8pc.onnx
+  softcatala/onnx/model_q8pc.onnx, umu/onnx/model_q8pc.onnx
+
+Ús (entorn venv-nemo):
+    python eines/onnx_requantitza.py
+"""
 import argparse
 from pathlib import Path
 
@@ -39,10 +53,9 @@ def main():
         else:
             print(f"[avís] No trobe {f32}")
 
-    print("\nSegüent:")
-    print("    python codi/onnx_valida.py --models onnx-int8pc")
-    print("    python codi/pas0_linia_base.py --models conformer-ca-es onnx-fp32 onnx-int8 onnx-int8pc")
-    print("    python codi/pas1_cascada.py --asr onnx-int8 onnx-int8pc --puntuadors "
+    print("\nSegüent: python eines/onnx_baixa_umu_oficial.py")
+    print("    python eines/pas0_linia_base.py --models conformer-ca-es onnx-fp32 onnx-int8 onnx-int8pc")
+    print("    python eines/pas1_cascada.py --asr onnx-int8 onnx-int8pc --puntuadors "
           "softcatala-int8+umu-int8 softcatala-q8pc+umu-q8pc --compara")
 
 

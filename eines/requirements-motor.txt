@@ -1,0 +1,6 @@
+numpy
+onnxruntime
+tokenizers
+librosa
+soundfile
+imageio-ffmpeg
