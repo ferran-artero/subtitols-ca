@@ -218,3 +218,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# models i entorns
+*.onnx
+*.nemo
+models_onnx/
+venv*/
+
+# àudios de proves (la teva veu)
+*.wav
+*.mp3
+*.mp4
