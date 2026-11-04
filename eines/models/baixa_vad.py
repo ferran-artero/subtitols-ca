@@ -1,18 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Ferran Artero Merino — vegeu NOTICE
 """
-FASE 1.3 — Baixa Silero VAD (ja és ONNX, ~2 MB) i la seua llicència (MIT).
+Baixa Silero VAD (ja és ONNX, ~2 MB) i la seua llicència (MIT).
 
 Escriu a models_onnx/silero-vad/: silero_vad.onnx, LICENSE, CITATION.cff
 
 Ús:
-    python eines/onnx_baixa_vad.py
+    python eines/models/baixa_vad.py
 """
 import argparse
 import urllib.request
 from pathlib import Path
 
-ARREL = Path(__file__).resolve().parent.parent
+ARREL = Path(__file__).resolve().parents[2]          # arrel del repositori
 BASE = "https://raw.githubusercontent.com/snakers4/silero-vad/master/"
 FITXERS = {
     "silero_vad.onnx": "src/silero_vad/data/silero_vad.onnx",
@@ -41,7 +41,7 @@ def main():
         s = ort.InferenceSession(str(vad), providers=["CPUExecutionProvider"])
         print("  Entrades:", [(i.name, i.shape, i.type) for i in s.get_inputs()])
         print("  Eixides:", [(o.name, o.shape) for o in s.get_outputs()])
-    print("\nSegüent: python eines/onnx_quantitza_pesos.py --bits 8")
+    print("\nSegüent: python eines/models/baixa_umu.py")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Ferran Artero Merino — vegeu NOTICE
 """
-FASE 1.2 — Exporta els puntuadors de text (token-classification) a ONNX i a int8.
+Exporta el puntuador de Softcatalà (token-classification) a ONNX. Després: quantitza.py.
+(La UMU no cal exportar-la: el seu int8 oficial es baixa amb baixa_umu.py.)
 
 Estructura d'eixida (la que espera transformers.js al navegador):
   models_onnx/<nom>/config.json, tokenizer.json, tokenizer_config.json, ...
@@ -11,13 +12,12 @@ Estructura d'eixida (la que espera transformers.js al navegador):
 Comprova que l'ONNX dona els mateixos logits que PyTorch amb frases de prova.
 
 Ús (entorn venv-nemo, amb `pip install onnxruntime`):
-    python eines/onnx_exporta_puntuadors.py
-    python eines/onnx_exporta_puntuadors.py --models softcatala
-"""
+    python eines/models/exporta_puntuadors.py
+    """
 import argparse
 from pathlib import Path
 
-ARREL = Path(__file__).resolve().parent.parent
+ARREL = Path(__file__).resolve().parents[2]          # arrel del repositori
 MODELS = {
     "softcatala": "softcatala/fullstop-catalan-punctuation-prediction",
     "umu": "UMUTeam/catalan_capitalization_punctuation_restoration",
@@ -106,18 +106,18 @@ def exporta(nom: str, id_model: str, eixida: Path, opset: int) -> None:
                 dif_max = max(dif_max, float(np.abs(lo - ref).max()))
     print(f"  fp32: diferència màxima de logits {dif_max:.2e} · etiquetes iguals {100 * iguals['fp32'] / total:.1f}%")
     print(f"  int8: etiquetes iguals que PyTorch {100 * iguals['int8'] / total:.1f}% "
-          "(la prova de veritat és pas1_cascada.py)")
+          "")
 
 
 def main():
     ap = argparse.ArgumentParser(description="Exporta els puntuadors a ONNX (float32 + int8)")
-    ap.add_argument("--models", nargs="+", default=list(MODELS), help=f"{', '.join(MODELS)} o ids de HF")
+    ap.add_argument("--models", nargs="+", default=["softcatala"], help=f"{', '.join(MODELS)} o ids de HF")
     ap.add_argument("--eixida", default=str(ARREL / "models_onnx"))
     ap.add_argument("--opset", type=int, default=17)
     a = ap.parse_args()
     for nom in a.models:
         exporta(nom if nom in MODELS else Path(nom).name, MODELS.get(nom, nom), Path(a.eixida), a.opset)
-    print("\nSegüent: python eines/onnx_baixa_vad.py")
+    print("\nSegüent: python eines/models/baixa_vad.py")
 
 
 if __name__ == "__main__":

@@ -1,101 +1,127 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Ferran Artero Merino — vegeu NOTICE
 """
-Transcriu qualsevol àudio o vídeo amb el motor de referència (sense NeMo ni PyTorch)
-i escriu, per a cada fitxer:
-  <nom>.json   paraules amb inici/fi, signes i majúscules, trossos del VAD i temps
-  <nom>.srt    subtítols senzills, per a obrir el vídeo amb VLC i comprovar els temps
+Àudio o vídeo -> subtítols, amb el motor de referència (sense NeMo ni PyTorch).
+
+Per a cada fitxer escriu a --eixida:
+  <nom>.json                 paraules amb inici/fi, signes i majúscules (la transcripció)
+  <nom>.<perfil>[.<ressaltat>].srt / .vtt / .txt
+
+Si li passes un .json (d'una transcripció anterior), només torna a fer els subtítols: és
+instantani i serveix per a provar paràmetres. Amb --reutilitza fa el mateix si el .json del
+vídeo ja és a --eixida.
 
 Ús:
-    python eines/transcriu.py C:/videos/entrevista.mp4
-    python eines/transcriu.py dades/videos            (tots els de la carpeta)
-    python eines/transcriu.py C:/audios/nota.wav --eixida C:/subtitols
-Per a vídeos cal ffmpeg (si no el tens: pip install imageio-ffmpeg).
+    python eines/transcriu.py video.mp4 --models models_onnx
+    python eines/transcriu.py video.mp4 --perfil vertical --max-car 20 --ressalta progres --color groc
+    python eines/transcriu.py video.json --perfil horitzontal vertical --formats srt vtt txt
+    python eines/transcriu.py carpeta_amb_videos --reutilitza
 """
 import argparse
 import json
 import time
 from pathlib import Path
 
-from motor_ref.audio import SR, expandeix, llegeix
-from motor_ref.motor import ASR_PER_DEFECTE, RESCAT_FINESTRES, RESCAT_FORAT, RESCAT_MAX, RESCAT_PENAL, VARIANTS_ASR, Motor
-from motor_ref.vad import ParamsVAD
-from motor_ref.srt import escriu_srt, subtitols
+from motor_ref import subtitols as S
+from motor_ref.audio import MULTIMEDIA, SR, llegeix
 
 ARREL = Path(__file__).resolve().parent.parent
 
 
+def entrades(rutes) -> list[Path]:
+    res = []
+    for r in map(Path, rutes):
+        if r.is_dir():
+            res += sorted(p for p in r.rglob("*") if p.suffix.lower() in MULTIMEDIA)
+        elif r.exists():
+            res.append(r)
+        else:
+            print(f"[avís] No existeix: {r}")
+    return res
+
+
 def main():
-    ap = argparse.ArgumentParser(description="Àudio/vídeo -> JSON + SRT amb el motor de referència")
-    ap.add_argument("fitxers", nargs="+", help="Fitxers o carpetes d'àudio/vídeo")
-    ap.add_argument("--models", default=str(ARREL / "models_onnx"))
-    ap.add_argument("--eixida", default=str(ARREL / "resultats"))
-    ap.add_argument("--fils", type=int, default=None)
-    ap.add_argument("--asr", choices=list(VARIANTS_ASR), default=ASR_PER_DEFECTE, help="Variant del Conformer")
-    ap.add_argument("--rescat", type=float, default=RESCAT_PENAL,
-                    help="Penalització inicial del blank dins dels forats amb veu (0 = sense rescat)")
-    ap.add_argument("--rescat-max", type=float, default=RESCAT_MAX, help="Fins on pot pujar la penalització")
-    ap.add_argument("--rescat-forat", type=float, default=RESCAT_FORAT, help="Durada mínima d'un forat (s)")
-    ap.add_argument("--sense-finestra", action="store_true", help="Rescat sense l'etapa de la finestra curta")
-    ap.add_argument("--majuscules", default=None,
-                    help="Model de majúscules dins de models_onnx (per defecte umu-oficial; l'antic: umu/model_q8pc.onnx)")
-    ap.add_argument("--max-tros", type=float, default=None, help="Durada màxima d'un tros (s)")
-    ap.add_argument("--penal-blank", type=float, default=0.0, help="Penalització del blank (0 = cap)")
+    ap = argparse.ArgumentParser(description="Àudio/vídeo (o JSON del motor) -> subtítols SRT/VTT/TXT")
+    ap.add_argument("fitxers", nargs="+", help="Àudios, vídeos, JSON del motor o carpetes")
+    ap.add_argument("--eixida", default=".", help="Carpeta on s'escriuen els resultats")
+    ap.add_argument("--models", default=str(ARREL / "models_onnx"), help="Carpeta dels models ONNX")
+    ap.add_argument("--reutilitza", action="store_true", help="Si <nom>.json ja existeix, no torna a transcriure")
+    ap.add_argument("--fils", type=int, default=None, help="Fils de CPU")
+    g = ap.add_argument_group("subtítols")
+    g.add_argument("--perfil", nargs="+", default=["horitzontal"], choices=list(S.PERFILS))
+    g.add_argument("--max-car", type=int, help="Caràcters màxims per línia")
+    g.add_argument("--max-linies", type=int, help="Línies màximes per subtítol")
+    g.add_argument("--max-paraules", type=int, help="Paraules màximes per subtítol (0 = sense límit)")
+    g.add_argument("--max-cps", type=float, help="Caràcters per segon màxims")
+    g.add_argument("--durada-min", type=float, help="Durada mínima d'un subtítol (s)")
+    g.add_argument("--durada-max", type=float, help="Durada màxima de parla en un subtítol (s)")
+    g.add_argument("--separacio", type=float, help="Buit mínim entre subtítols (s)")
+    g.add_argument("--enganxa", type=float, help="Allarga el subtítol fins al següent si el buit és menor (s)")
+    g.add_argument("--cua", type=float, help="Temps a pantalla després de la darrera paraula (s)")
+    g.add_argument("--desfas", type=float, help="Desplaça tots els temps (s), p. ex. -0.08")
+    g = ap.add_argument_group("ressaltat de paraules")
+    g.add_argument("--ressalta", choices=["paraula", "progres", "acumula"],
+                   help="paraula: la que es diu; progres: karaoke; acumula: apareixen d'una en una")
+    g.add_argument("--subratlla", action="store_true", default=None, help="Subratllat (per defecte si no se'n tria cap)")
+    g.add_argument("--negreta", action="store_true", default=None)
+    g.add_argument("--cursiva", action="store_true", default=None)
+    g.add_argument("--color", help="Color del text marcat: #RRGGBB o groc, verd, roig, blau, taronja, rosa…")
+    g.add_argument("--fons", help="Color de fons de la paraula marcada (només VTT)")
+    g.add_argument("--marca", help="Etiquetes pròpies, p. ex. '<b>,</b>'")
+    g.add_argument("--formats", nargs="+", default=["srt"], choices=["srt", "vtt", "txt"])
     a = ap.parse_args()
 
-    fitxers = expandeix(a.fitxers)
+    try:
+        color, fons = S.color_hex(a.color or ""), S.color_hex(a.fons or "")
+    except ValueError as e:
+        raise SystemExit(e)
+    fitxers = entrades(a.fitxers)
     if not fitxers:
-        raise SystemExit("No he trobat cap fitxer d'àudio o vídeo.")
-    print(f"{len(fitxers)} fitxers: {', '.join(f.name for f in fitxers)}")
-    pv = ParamsVAD() if a.max_tros is None else ParamsVAD(max_tros=a.max_tros)
-    motor = Motor(a.models, fils=a.fils, asr=a.asr, params_vad=pv, penal_blank=a.penal_blank, rescat=a.rescat,
-                  rescat_max=a.rescat_max, rescat_forat=a.rescat_forat, majuscules=a.majuscules,
-                  finestres=() if a.sense_finestra else RESCAT_FINESTRES)
-    sufix_nom = ("" if a.asr == ASR_PER_DEFECTE else f".{a.asr}") + ("" if a.max_tros is None else f".t{a.max_tros:g}") + \
-        (f".b{a.penal_blank:g}" if a.penal_blank else "") + ("" if a.rescat == RESCAT_PENAL else f".r{a.rescat:g}") + \
-        ("" if a.rescat_max == RESCAT_MAX else f".rm{a.rescat_max:g}") + \
-        ("" if a.rescat_forat == RESCAT_FORAT else f".rf{a.rescat_forat:g}") + \
-        (f".{Path(a.majuscules).stem}" if a.majuscules else "") + (".sf" if a.sense_finestra else "")
-    print(f"ASR {a.asr} · trossos de com a molt {pv.max_tros:g} s · penalització fixa {a.penal_blank:g} · "
-          f"rescat {a.rescat:g}..{a.rescat_max:g} en forats de ≥ {a.rescat_forat:g} s"
-          + (f" · majúscules {a.majuscules}" if a.majuscules else ""))
-    print(f"Motor carregat en {motor.temps_carrega:.1f} s")
+        raise SystemExit("No he trobat cap fitxer d'àudio, vídeo o JSON.")
     eix = Path(a.eixida)
     eix.mkdir(parents=True, exist_ok=True)
+    motor = None
 
     for f in fitxers:
-        t0 = time.perf_counter()
-        try:
+        js = eix / f"{f.stem}.json"
+        if f.suffix.lower() == ".json":
+            r = json.loads(f.read_text(encoding="utf-8"))
+        elif a.reutilitza and js.exists():
+            r = json.loads(js.read_text(encoding="utf-8"))
+            print(f"{f.name}: reutilitze {js}")
+        else:
+            if motor is None:
+                from motor_ref.motor import Motor
+                motor = Motor(a.models, fils=a.fils)
+                print(f"Motor carregat en {motor.temps_carrega:.1f} s")
+            t0 = time.perf_counter()
             x = llegeix(f)
-        except Exception as e:
-            print(f"\n[error] {f.name}: {e}")
-            continue
-        print(f"\n{f.name}: {len(x) / SR / 60:.1f} min (lectura {time.perf_counter() - t0:.1f} s)")
+            print(f"\n{f.name}: {len(x) / SR / 60:.1f} min")
+            r = motor.transcriu(x, progres=lambda i, n, t: print(f"  tros {i}/{n}  {t['ini']:7.1f}–{t['fi']:7.1f} s"))
+            r["audio"] = f.name
+            js.write_text(json.dumps(r, ensure_ascii=False, indent=1), encoding="utf-8")
+            print(f"  {time.perf_counter() - t0:.1f} s (RTF {r['temps']['rtf']})")
 
-        def progres(i, n, r):
-            print(f"  tros {i}/{n}  {r['ini']:7.1f}–{r['fi']:7.1f} s  {len(r['paraules']):4d} paraules  "
-                  f"(enc {r['temps']['encoder']:.2f} s, dec {r['temps']['decoder']:.2f} s)")
-
-        r = motor.transcriu(x, progres=progres)
-        r["audio"] = f.name
-        (eix / f"{f.stem}{sufix_nom}.json").write_text(json.dumps(r, ensure_ascii=False, indent=1), encoding="utf-8")
-        escriu_srt(subtitols(r["paraules"]), eix / f"{f.stem}{sufix_nom}.srt")
-        t = r["temps"]
-        forcats = sum(t["forcat"] for t in r["trossos"])
-        rescatats = [t for t in r["trossos"] if t.get("rescat")]
-        if rescatats:
-            print(f"  rescat (forats amb veu tornats a descodificar, amb la penalització usada): "
-                  + ", ".join(f"{r['forat'][0]:.1f}–{r['forat'][1]:.1f} s ("
-                              + (f"finestra ±{r['marge']:g} s, {r['paraules']} paraules" if r['abast'] == 'finestra' and r['marge'] is not None
-                                 else "finestra sense resultat" if r['abast'] == 'finestra'
-                                 else f"p{r['penal']:g}" + (" tros" if r['abast'] == 'tros' else "")) + ")"
-                              for t in rescatats for r in t["rescat"]))
-        print(f"  {len(r['paraules'])} paraules en {len(r['trossos'])} trossos"
-              + (f" ({forcats} amb talls forçats per parla seguida de més de 25 s)" if forcats else ""))
-        print(f"  temps: VAD {t['vad']} s · mel {t['mel']} s · encoder {t['encoder']} s · "
-              f"decoder {t['decoder']} s · puntuació {t['puntuacio']} s · total {t['total']} s  "
-              f"->  RTF {t['rtf']}")
-        print(f"  escrit: {eix / (f.stem + sufix_nom + '.json')} i .srt")
+        ps = r["paraules"]
+        if "txt" in a.formats:
+            (eix / f"{f.stem}.txt").write_text(S.txt(ps), encoding="utf-8")
+        for nom in a.perfil:
+            P = S.params(nom, max_car=a.max_car, max_linies=a.max_linies, max_paraules=a.max_paraules,
+                         max_cps=a.max_cps, durada_min=a.durada_min, durada_max=a.durada_max,
+                         separacio=a.separacio, enganxa=a.enganxa, cua=a.cua, desfas=a.desfas,
+                         ressalta=a.ressalta, subratlla=a.subratlla, negreta=a.negreta, cursiva=a.cursiva,
+                         color=color or None, fons=fons or None,
+                         marca=tuple(a.marca.split(",", 1)) if a.marca else None)
+            seg = S.segmenta(ps, P)
+            cues = S.expandeix(seg, P)
+            nom_fitxer = f"{f.stem}.{nom}" + (f".{P.ressalta}" if P.ressalta else "")
+            for fmt in ("srt", "vtt"):
+                if fmt in a.formats:
+                    for av in S.avisos(P, fmt):
+                        print(f"[avís] {av}")
+                    (eix / f"{nom_fitxer}.{fmt}").write_text(S.srt(cues, P) if fmt == "srt" else S.vtt(cues, P),
+                                                             encoding="utf-8")
+            print(f"  {nom}: {len(seg)} subtítols -> {eix / nom_fitxer}.*")
 
 
 if __name__ == "__main__":

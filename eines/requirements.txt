@@ -1,0 +1,7 @@
+# Motor de referència i transcriu.py (sense PyTorch)
+numpy
+onnxruntime
+tokenizers
+soundfile
+soxr
+imageio-ffmpeg

@@ -9,8 +9,9 @@ Està pensat per a creadors de contingut en català, amb atenció especial al **
 
 🌐 **Web:** https://ferran-artero.github.io/subtitols-ca/
 
-> **Estat:** en desenvolupament. El motor de reconeixement ja funciona i està validat en Python
-> (`eines/`). Ara s'està portant al navegador. Fins que no estiga acabat, la web no transcriu.
+> **Estat:** en desenvolupament. El motor de reconeixement i la segmentació dels subtítols ja
+> funcionen i estan validats en Python (`eines/`). Ara s'estan portant al navegador. Fins que no
+> estiga acabat, la web no transcriu.
 
 ---
 
@@ -31,7 +32,10 @@ vídeo/àudio ─► àudio 16 kHz ─► detecció de veu ─► reconeixement 
    finestra curta al voltant del forat. En àudios nets no s'activa mai.
 4. **Puntuació i majúscules.** Els signes els posa el model de Softcatalà i les majúscules dels
    noms propis, el de la Universitat de Múrcia.
-5. **Subtítols** amb el temps de cada paraula.
+5. **Subtítols.** Es talla on menys molesta (signes, pauses; mai darrere d'un article o una
+   preposició) respectant els caràcters per línia, les línies i la velocitat de lectura. Hi ha
+   perfils per a vídeo horitzontal, vertical (Reels, TikTok) i accessibilitat, i es pot ressaltar
+   cada paraula quan es pronuncia (subratllat, color o efecte karaoke).
 
 Tots els models s'executen amb ONNX Runtime. La web els baixa la primera vegada (≈ 460 MB) i
 després els guarda en la memòria cau del navegador.
@@ -56,10 +60,10 @@ La majoria d'errors que queden són formes dialectals que el model normalitza ("
 ```
 subtitols-ca/
 ├── web/              # la pàgina (és l'única carpeta que es publica a GitHub Pages)
-├── eines/            # preparació dels models i motor de referència en Python
-│   ├── motor_ref/    # el motor complet: numpy + onnxruntime + tokenizers
-│   ├── transcriu.py  # transcriu àudio o vídeo des de la línia d'ordres
-│   └── onnx_*.py     # converteixen i quantitzen els models a ONNX
+├── eines/            # motor de referència en Python i preparació dels models
+│   ├── transcriu.py  # àudio o vídeo -> subtítols, des de la línia d'ordres
+│   ├── motor_ref/    # el motor complet (numpy + onnxruntime + tokenizers) i la segmentació
+│   └── models/       # converteixen i quantitzen els models a ONNX
 ├── docs/             # història del projecte i decisions
 ├── MODELS.md         # models, autors, llicències i cites
 ├── LICENSE           # GPL-3.0
@@ -72,11 +76,13 @@ Mentre la web no estiga acabada, es pot transcriure des de la línia d'ordres. C
 posterior.
 
 ```bash
-pip install -r eines/requirements-motor.txt
+pip install -r eines/requirements.txt
 python eines/transcriu.py el_meu_video.mp4 --models ruta/a/models_onnx
+python eines/transcriu.py el_meu_video.mp4 --perfil vertical --ressalta progres --color groc
 ```
 
-Escriu `el_meu_video.json` (paraules amb temps, signes i majúscules) i `el_meu_video.srt`.
+Escriu `el_meu_video.json` (paraules amb temps, signes i majúscules) i els subtítols
+(`el_meu_video.horitzontal.srt`…). Totes les opcions són a [`eines/README.md`](eines/README.md).
 
 Per a generar els models (`models_onnx/`) cal NeMo. Vegeu [`eines/README.md`](eines/README.md).
 Quan estiguen publicats a Hugging Face, n'hi haurà prou de baixar-los.
@@ -88,8 +94,8 @@ Quan estiguen publicats a Hugging Face, n'hi haurà prou de baixar-los.
 - [x] **Fase 2:** motor de referència en Python, validat peça a peça
 - [ ] **Fase 3:** motor en JavaScript al navegador (WASM / WebGPU)
 - [ ] **Fase 4:** models publicats a Hugging Face
-- [ ] **Fase 5:** segmentació dels subtítols (caràcters per línia, velocitat de lectura, talls
-      per frases, perfils per a vídeo horitzontal i vertical)
+- [x] **Fase 5:** segmentació dels subtítols (caràcters per línia, velocitat de lectura, talls
+      per frases, perfils per a vídeo horitzontal i vertical, ressaltat de paraules)
 - [ ] **Fase 6:** interfície: pujar, previsualitzar, editar la transcripció i descarregar
       SRT/VTT/TXT
 - [ ] **Fases 7–9:** robustesa, proves automàtiques i versió 1.0

@@ -4,7 +4,21 @@
 Motor complet: àudio 16 kHz -> paraules amb temps, signes i majúscules.
 
     motor = Motor("models_onnx")
-    res = motor.transcriu(audio)        # dict, vegeu `transcriu`
+    r = motor.transcriu(audio)    # {durada_s, text, paraules: [{text, ini, fi, cru, punt}], trossos, temps}
+
+Rescat de frases perdudes. El Conformer de vegades s'"encalla" emetent blank durant segons
+(sobretot amb música i en trossos llargs; NeMo original fa el mateix) i al voltant es menja
+paraules soltes. Un forat és un interval de la zona pròpia d'un tros sense paraules, de
+≥ FORAT s, on ≥ 75 % del temps el VAD diu que hi ha veu. Si un tros té cap forat:
+  1. es torna a descodificar TOT el tros amb el blank penalitzat PENAL (l'encoder no es repeteix);
+  2. per a cada forat que quede, es torna a passar per l'encoder només una finestra curta al
+     voltant del forat (± FINESTRES s, per ordre; sense penalitzar i amb PENAL) i se n'agafen
+     les paraules de dins del forat; es queda la primera que el tanca o, si cap, la que hi posa
+     més paraules. (Amb trossos llargs l'encoder de vegades "no sent" una frase que en una
+     finestra curta reconeix bé.)
+  3. si encara queden forats, la penalització puja a PENAL+1 ... PENAL_MAX només dins dels
+     forats (± MARGE s); les paraules de l'etapa 2 tenen preferència.
+En àudios nets no s'activa mai (als 38 clips de prova el text no canvia).
 """
 import time
 from pathlib import Path
@@ -15,92 +29,44 @@ from .mel import Mel
 from .paraules import a_paraules
 from .puntua import ModelEtiquetes, Puntuador
 from .rnnt import RNNT
-from .vad import SR, VAD, ParamsVAD
+from .vad import SEG_FINESTRA, SR, VAD
 
-VERSIO = 3              # 3: rescat en tres etapes (tros, forats escalats, finestra curta)
+FORAT = 0.7                     # s: durada mínima d'un forat
+VEU_FRAC = 0.75                 # fracció del forat amb veu segons el VAD
+VEU_LLINDAR = 0.5               # probabilitat del VAD que compta com a veu
+PENAL = 2.0                     # penalització del blank a l'etapa 1
+PENAL_MAX = 4.0                 # fins on puja a l'etapa 3
+MARGE = 0.2                     # s al voltant del forat a l'etapa 3
+FINESTRES = (1.0, 2.0, 0.5, 3.0)  # s de context a cada costat del forat a l'etapa 2
 
-# Rescat de frases perdudes: el Conformer de vegades s'"encalla" emetent blank durant segons
-# (sobretot amb música de fons i en trossos llargs; NeMo original fa el mateix) i al voltant es
-# menja paraules soltes. Cada tros es descodifica primer sense penalització. Si a la seua zona
-# pròpia queda un forat (≥ RESCAT_FORAT s sense paraules i amb ≥ RESCAT_VEU_FRAC d'aquest temps
-# amb veu segons el VAD):
-#   1. el tros és "difícil": es torna a descodificar (només el bucle RNNT, l'encoder no) restant
-#      RESCAT_PENAL al logit del blank a TOT el tros (recupera també les paraules soltes);
-#   2. si encara queda algun forat, es torna a passar per l'encoder NOMÉS una finestra curta al
-#      voltant del forat: amb trossos llargs (> 15 s, més que els clips amb què es va entrenar)
-#      l'encoder de vegades "no sent" una frase que en una finestra curta reconeix perfectament.
-#      Com que el resultat depén del context exacte, es proven finestres de ± RESCAT_FINESTRES s
-#      (sense penalització i amb la del rescat) fins que una tanca el forat. De la finestra només
-#      s'agafen les paraules que cauen dins del forat: la resta del tros no canvia mai;
-#   3. si tot i això queda algun forat, la penalització NOMÉS d'aquell forat (± RESCAT_MARGE s)
-#      puja +1 cada vegada fins a RESCAT_MAX.
-# Els trossos sense forats no canvien: als àudios nets no s'hi aplica mai (una penalització fixa
-# a tot arreu hi faria inventar paraules).
-RESCAT_FORAT = 0.7
-RESCAT_VEU_FRAC = 0.75
-RESCAT_LLINDAR = 0.5
-RESCAT_PENAL = 2.0
-RESCAT_MAX = 4.0
-RESCAT_MARGE = 0.2
-RESCAT_FINESTRES = (1.0, 2.0, 0.5, 3.0)   # s de context a cada costat del forat a l'etapa 3, per ordre
-SEG_VAD = 0.032           # segons per finestra del VAD (512 mostres a 16 kHz)
+# Fitxers dins de la carpeta de models (els mateixos que baixa la web)
+CONFORMER = "conformer-ca-es"
+SILERO = "silero-vad/silero_vad.onnx"
+SOFTCATALA = ("softcatala", "model_q8pc.onnx")
+UMU = ("umu-oficial", "model.onnx")
 
 
-def forats_amb_veu(paraules: list[dict], ini: float, fi: float, probs: np.ndarray | None,
-                   minim: float = RESCAT_FORAT, frac: float = RESCAT_VEU_FRAC,
-                   llindar: float = RESCAT_LLINDAR) -> list[tuple[float, float]]:
-    """Intervals entre `ini` i `fi` (la zona pròpia del tros) sense cap paraula, d'almenys `minim` s,
-    dels quals almenys una fracció `frac` és veu segons el VAD (probabilitat ≥ `llindar`).
-    Sense VAD, cap."""
-    if probs is None:
-        return []
+def centre(p: dict) -> float:
+    return (p["ini"] + p["fi"]) / 2
+
+
+def forats(paraules: list[dict], ini: float, fi: float, probs: np.ndarray) -> list[tuple[float, float]]:
+    """Intervals sense paraules dins de [ini, fi), de ≥ FORAT s i amb prou veu segons el VAD."""
     temps = [ini] + [min(max(t, ini), fi) for p in paraules for t in (p["ini"], p["fi"])] + [fi]
     res = []
     for a, b in zip(temps[0::2], temps[1::2]):            # (fi anterior, inici següent)
-        if b - a < minim:
+        if b - a < FORAT:
             continue
-        i0, i1 = int(a / SEG_VAD), int(b / SEG_VAD)
-        if float((probs[i0:i1] >= llindar).sum()) * SEG_VAD < frac * minim:
-            continue
-        res.append((round(a, 2), round(b, 2)))
+        i0, i1 = int(a / SEG_FINESTRA), int(b / SEG_FINESTRA)
+        if float((probs[i0:i1] >= VEU_LLINDAR).sum()) * SEG_FINESTRA >= VEU_FRAC * FORAT:
+            res.append((round(a, 2), round(b, 2)))
     return res
 
 
-# Variants del Conformer a models_onnx/conformer-ca-es/: (sufix de l'encoder, sufix del decoder_joint)
-# El decoder_joint és petit (17 MB) però es crida milers de vegades amb matrius petites: en
-# MatMulNBits va 5 vegades més lent, per això les variants q*w el deixen en float32.
-VARIANTS_ASR = {
-    "fp32": ("", ""),                 # sense quantitzar (459 + 17 MB)
-    "int8": (".int8", ".int8"),       # int8 dinàmic (pesos i activacions)
-    "int8pc": (".int8pc", ".int8pc"), # int8 dinàmic per canal (fase 1): inestable, perd frases
-    "q8w": (".q8w", ""),              # encoder amb pesos de 8 bits (onnx_quantitza_pesos.py)
-    "q4w": (".q4w", ""),              # encoder amb pesos de 4 bits: perd massa qualitat
-}
-ASR_PER_DEFECTE = "q8w"          # estable com fp32 i 182 MB (fase 2)
-
-# Fitxers de models_onnx/ que fa servir (els mateixos que baixarà la web)
-FITXERS = {
-    "asr": "conformer-ca-es",                    # + encoder/decoder_joint{sufix}.onnx (VARIANTS_ASR)
-    "vad": "silero-vad/silero_vad.onnx",
-    "signes": ("softcatala", "model_q8pc.onnx"),
-    "majuscules": ("umu-oficial", "model.onnx"),   # int8 de la UMU (onnx_baixa_umu_oficial.py)
-}
-
-
-def llig_model_punt(nom: str) -> tuple[str, str]:
-    """'umu-oficial' -> ('umu-oficial', 'model.onnx'); 'umu/model_q8pc.onnx' -> ('umu', 'model_q8pc.onnx')."""
-    nom = nom.replace("\\", "/").strip("/")
-    if nom.endswith(".onnx"):
-        carpeta, fitxer = nom.rsplit("/", 1)
-        return carpeta.replace("/onnx", ""), fitxer
-    return nom, "model.onnx"
-
-
 def ajunta(totes: list[dict], noves: list[dict]) -> None:
-    """Afegeix les paraules d'un tros a les anteriors. A la frontera d'un tall forçat, els dos
-    trossos poden haver vist la mateixa paraula amb temps lleugerament diferents: si una paraula
-    nova comença abans que acabe l'última anterior i és la mateixa, es descarta; si és diferent,
-    se li ajusta l'inici perquè l'ordre i els temps siguen coherents."""
+    """Afegeix les paraules d'un tros. A la vora d'un tall forçat els dos trossos poden veure la
+    mateixa paraula: si una paraula nova comença abans que acabe l'anterior i és la mateixa, es
+    descarta; si és diferent, se li ajusta l'inici."""
     if not totes:
         totes.extend(noves)
         return
@@ -117,168 +83,113 @@ def ajunta(totes: list[dict], noves: list[dict]) -> None:
 
 
 class Motor:
-    def __init__(self, models: str | Path, fils: int | None = None, params_vad: ParamsVAD | None = None,
-                 asr: str | None = None, fitxer_punt: str | None = None, penal_blank: float = 0.0,
-                 rescat: float = RESCAT_PENAL, rescat_max: float = RESCAT_MAX, rescat_forat: float = RESCAT_FORAT,
-                 majuscules: str | None = None, finestres: tuple = RESCAT_FINESTRES):
-        """penal_blank: penalització fixa (tot arreu); rescat: penalització inicial només dins dels
-        forats on hi ha veu (0 = sense rescat); rescat_max: fins on pot pujar; rescat_forat: durada
-        mínima d'un forat (s); finestres: marges (s) de l'etapa 2, () = sense; majuscules: model de majúscules, "carpeta" (amb onnx/model.onnx) o
-        "carpeta/fitxer.onnx" dins de models_onnx (per defecte FITXERS["majuscules"])."""
+    def __init__(self, models: str | Path, fils: int | None = None, asr: str = "q8w", rescat: bool = True):
+        """asr: "q8w" (per defecte) o "fp32"; rescat=False desactiva el rescat (per a comparar)."""
         models = Path(models)
         t0 = time.perf_counter()
-        conf = models / FITXERS["asr"]
-        self.asr = asr or ASR_PER_DEFECTE
-        sufix_enc, sufix_dec = VARIANTS_ASR[self.asr]
-        self.rnnt = RNNT(conf, sufix_enc, fils, sufix_dec, penal_blank)
-        self.rescat = float(rescat)
-        self.rescat_max = max(float(rescat_max), self.rescat)
-        self.rescat_forat = float(rescat_forat)
-        self.finestres = tuple(float(f) for f in finestres)      # () = sense etapa 3
+        conf = models / CONFORMER
+        self.rnnt = RNNT(conf, asr, fils)
         self.mel = Mel(np.load(conf / "mel_fb.npy"), np.load(conf / "finestra.npy"))
-        self.vad = VAD(str(models / FITXERS["vad"]), params_vad, fils)
-        (cs, fs), (cm, fm) = FITXERS["signes"], llig_model_punt(majuscules) if majuscules else FITXERS["majuscules"]
-        self.puntuador = Puntuador(ModelEtiquetes(models / cs, fitxer_punt or fs, fils),
-                                   ModelEtiquetes(models / cm, fitxer_punt or fm, fils))
+        self.vad = VAD(str(models / SILERO), fils=fils)
+        self.puntuador = Puntuador(ModelEtiquetes(models / SOFTCATALA[0], SOFTCATALA[1], fils),
+                                   ModelEtiquetes(models / UMU[0], UMU[1], fils))
+        self.rescat = rescat
         self.temps_carrega = time.perf_counter() - t0
 
-    def _omple_finestra(self, senyal: np.ndarray, paraules: list[dict], forat: tuple[float, float],
-                        probs: np.ndarray) -> tuple[list[dict], dict | None]:
-        """Etapa 2 del rescat: torna a reconéixer finestres curtes al voltant del `forat` i hi afig les paraules
-        que hi cauen dins (sense tocar les altres). Es queda amb la primera finestra que tanca el
-        forat; si cap no el tanca, amb la que més paraules hi posa. Torna (paraules, què s'ha usat)."""
+    def _paraules(self, enc, T, inici, penal=0.0) -> tuple[list[dict], list[int], list[int]]:
+        ids, trames = self.rnnt.descodifica(enc, T, penal)
+        return a_paraules(ids, trames, self.rnnt.peces, inici, self.rnnt.seg_trama), ids, trames
+
+    def _finestra(self, x: np.ndarray, paraules: list[dict], forat: tuple[float, float],
+                  probs: np.ndarray) -> tuple[list[dict], dict | None]:
+        """Etapa 2: finestres curtes al voltant del forat; torna les paraules de dins i què s'ha usat."""
         a, b = forat
-        abans = [p for p in paraules if (p["ini"] + p["fi"]) / 2 < a]
-        despres = [p for p in paraules if (p["ini"] + p["fi"]) / 2 >= b]
+        abans = [p for p in paraules if centre(p) < a]
+        despres = [p for p in paraules if centre(p) >= b]
         millor, usat = [], None
-        for marge in self.finestres:
-            w0 = max(0.0, a - marge)
-            w1 = min(len(senyal) / SR, b + marge)
-            mel, valides = self.mel(senyal[int(w0 * SR):int(w1 * SR)])
-            enc, T = self.rnnt.encoder(mel, valides)
-            for pen in (self.rnnt.penal_blank, self.rnnt.penal_blank + self.rescat):
-                ids, inst = self.rnnt.descodifica(enc, T, penal_blank=pen)
-                cand = [p for p in a_paraules(ids, inst, self.rnnt.peces, w0, self.rnnt.seg_instant)
-                        if a <= (p["ini"] + p["fi"]) / 2 < b]
-                # la finestra pot tornar a veure la paraula de just abans o just després del forat
+        for m in FINESTRES:
+            w0, w1 = max(0.0, a - m), min(len(x) / SR, b + m)
+            enc, T = self.rnnt.encoder(*self.mel(x[int(w0 * SR):int(w1 * SR)]))
+            for pen in (0.0, PENAL):
+                cand = [p for p in self._paraules(enc, T, w0, pen)[0] if a <= centre(p) < b]
+                # la finestra pot tornar a veure la paraula de just abans o de just després
                 if cand and abans and cand[0]["text"] == abans[-1]["text"] and cand[0]["ini"] < a + 0.3:
                     cand = cand[1:]
                 if cand and despres and cand[-1]["text"] == despres[0]["text"] and cand[-1]["fi"] > b - 0.3:
                     cand = cand[:-1]
                 if not cand:
                     continue
-                if not forats_amb_veu(cand, a, b, probs, minim=self.rescat_forat):
-                    return cand, {"marge": marge, "penal": pen, "tancat": True}
+                if not forats(cand, a, b, probs):
+                    return cand, {"marge": m, "penal": pen, "tancat": True}
                 if len(cand) > len(millor):
-                    millor, usat = cand, {"marge": marge, "penal": pen, "tancat": False}
+                    millor, usat = cand, {"marge": m, "penal": pen, "tancat": False}
         return millor, usat
 
-    def asr_tros(self, x: np.ndarray, inici: float, probs: np.ndarray | None = None,
-                 propi: tuple[float, float] | None = None, senyal: np.ndarray | None = None) -> dict:
-        """Un tros (≤ 25 s): mel -> encoder -> RNNT (+ rescat). `propi`: zona on el tros és el
-        responsable de les paraules (els forats només es busquen allí). Torna ids, instants, paraules i temps."""
-        t = {}
+    def asr_tros(self, x: np.ndarray, tros: dict, probs: np.ndarray) -> dict:
+        """Un tros del VAD: mel -> encoder -> RNNT (+ rescat). Torna paraules, ids i temps."""
         t0 = time.perf_counter()
-        mel, valides = self.mel(x)
-        t["mel"] = time.perf_counter() - t0
-        t0 = time.perf_counter()
-        enc, T = self.rnnt.encoder(mel, valides)
-        t["encoder"] = time.perf_counter() - t0
-        t0 = time.perf_counter()
-        ids, instants = self.rnnt.descodifica(enc, T)
-        paraules = a_paraules(ids, instants, self.rnnt.peces, inici, self.rnnt.seg_instant)
-        fi = inici + len(x) / SR
-        z0, z1 = propi or (inici, fi)
-        forats = lambda ps: forats_amb_veu(ps, z0, z1, probs, minim=self.rescat_forat)
-        rescat = []                    # [{"forat": [a, b], "penal": p, "abast": "tros"|"forat"}]
-        trobats = forats(paraules) if self.rescat > 0 else []
-        if trobats:
-            base = self.rnnt.penal_blank
-            penal = np.full(T, base + self.rescat, dtype=np.float32)       # 1. tot el tros
-            rescat += [{"forat": [a, b], "penal": self.rescat, "abast": "tros"} for a, b in trobats]
-            ids, instants = self.rnnt.descodifica(enc, T, penal_blank=penal)
-            paraules = a_paraules(ids, instants, self.rnnt.peces, inici, self.rnnt.seg_instant)
-            si, nivell = self.rnnt.seg_instant, self.rescat + 1.0
-            trobats = forats(paraules)
+        ini = tros["ini"]
+        enc, T = self.rnnt.encoder(*self.mel(x[int(ini * SR):int(tros["fi"] * SR)]))
+        t_enc = time.perf_counter() - t0
+        paraules, ids, trames = self._paraules(enc, T, ini)
+        zona = lambda ps: forats(sorted(ps, key=lambda p: p["ini"]), tros["propi_ini"], tros["propi_fi"], probs)
+        rescat = []
+        oberts = zona(paraules) if self.rescat else []
+        if oberts:
+            # 1. tot el tros amb penalització
+            rescat += [{"forat": list(f), "penal": PENAL, "abast": "tros"} for f in oberts]
+            penal = np.full(T, PENAL, dtype=np.float32)
+            paraules, ids, trames = self._paraules(enc, T, ini, penal)
+            # 2. finestres curtes
             afegides = []
-
-            def etapa_finestra():
-                nonlocal trobats
-                if not (trobats and senyal is not None and self.finestres):
-                    return
-                for forat in trobats:
-                    noves, usat = self._omple_finestra(senyal, paraules + afegides, forat, probs)
-                    rescat.append({"forat": list(forat), "penal": usat and usat["penal"], "abast": "finestra",
-                                   "marge": usat and usat["marge"], "paraules": len(noves)})
-                    afegides.extend(noves)
-                trobats = forats(sorted(paraules + afegides, key=lambda p: p["ini"]))
-
-            etapa_finestra()                                                 # 2. finestra curta
-            while trobats and nivell <= self.rescat_max + 1e-6:              # 3. només els forats
-                for a, b in trobats:
-                    i0 = max(0, int((a - RESCAT_MARGE - inici) / si))
-                    i1 = min(T, int(np.ceil((b + RESCAT_MARGE - inici) / si)))
-                    penal[i0:i1] = np.maximum(penal[i0:i1], base + nivell)
+            for f in zona(paraules):
+                noves, usat = self._finestra(x, paraules + afegides, f, probs)
+                rescat.append({"forat": list(f), "penal": usat and usat["penal"], "abast": "finestra",
+                               "marge": usat and usat["marge"], "paraules": len(noves)})
+                afegides += noves
+            oberts = zona(paraules + afegides)
+            # 3. penalització creixent només dins dels forats
+            nivell = PENAL + 1.0
+            while oberts and nivell <= PENAL_MAX + 1e-6:
+                for a, b in oberts:
+                    i0 = max(0, int((a - MARGE - ini) / self.rnnt.seg_trama))
+                    i1 = min(T, int(np.ceil((b + MARGE - ini) / self.rnnt.seg_trama)))
+                    penal[i0:i1] = np.maximum(penal[i0:i1], nivell)
                     rescat.append({"forat": [a, b], "penal": nivell, "abast": "forat"})
-                ids, instants = self.rnnt.descodifica(enc, T, penal_blank=penal)
-                nou = a_paraules(ids, instants, self.rnnt.peces, inici, self.rnnt.seg_instant)
-                # les paraules ja afegides per l'etapa 3 tenen preferència dins del seu forat
+                nou, ids, trames = self._paraules(enc, T, ini, penal)
                 ocupat = [(p["ini"], p["fi"]) for p in afegides]
-                paraules = [p for p in nou if not any(i0 - 0.05 < (p["ini"] + p["fi"]) / 2 < f0 + 0.05
-                                                      for i0, f0 in ocupat)]
-                trobats = forats(sorted(paraules + afegides, key=lambda p: p["ini"]))
+                paraules = [p for p in nou if not any(i - 0.05 < centre(p) < f + 0.05 for i, f in ocupat)]
+                oberts = zona(paraules + afegides)
                 nivell += 1.0
             paraules = sorted(paraules + afegides, key=lambda p: p["ini"])
-        t["decoder"] = time.perf_counter() - t0
-        return {"rescat": rescat, "ini": round(inici, 3), "fi": round(fi, 3), "trames_mel": int(mel.shape[1]),
-                "valides": valides, "mel_suma": float(mel.sum()), "mel_primera": mel[:, 0].round(5).tolist(),
-                "ids": ids, "instants": instants, "paraules": paraules, "temps": t}
+        if tros["forcat"]:          # només les paraules el centre de les quals cau a la zona pròpia
+            paraules = [p for p in paraules if tros["propi_ini"] <= centre(p) < tros["propi_fi"]]
+        return {"ini": round(ini, 3), "fi": round(tros["fi"], 3), "forcat": tros["forcat"],
+                "propi": [round(tros["propi_ini"], 3), round(tros["propi_fi"], 3)],
+                "ids": ids, "trames": trames, "rescat": rescat, "paraules": paraules,
+                "temps": {"encoder": t_enc, "decoder": time.perf_counter() - t0 - t_enc}}
 
-    def transcriu(self, x: np.ndarray, sense_vad: bool = False, puntua: bool = True,
-                  progres=None) -> dict:
-        """sense_vad=True: tot l'àudio com un sol tros (només per a àudios curts i proves)."""
+    def transcriu(self, x: np.ndarray, progres=None) -> dict:
         durada = len(x) / SR
-        t_total = time.perf_counter()
         t0 = time.perf_counter()
-        if sense_vad:
-            trossos = [{"ini": 0.0, "fi": durada, "propi_ini": 0.0, "propi_fi": durada, "forcat": False}]
-            probs = None          # sense VAD no hi ha rescat: és el mode de proves
-        else:
-            trossos, probs = self.vad.trossos(x)
+        trossos, probs = self.vad.trossos(x)
         t_vad = time.perf_counter() - t0
-
-        resultats = []
-        for i, tr in enumerate(trossos):
-            r = self.asr_tros(x[int(tr["ini"] * SR):int(tr["fi"] * SR)], tr["ini"], probs,
-                              (tr["propi_ini"], tr["propi_fi"]), senyal=x)
-            r["forcat"] = tr["forcat"]
-            r["propi"] = [round(tr["propi_ini"], 3), round(tr["propi_fi"], 3)]
-            if tr["forcat"]:     # només les paraules el centre de les quals cau a la zona pròpia
-                r["paraules"] = [p for p in r["paraules"]
-                                 if tr["propi_ini"] <= (p["ini"] + p["fi"]) / 2 < tr["propi_fi"]]
+        resultats, paraules = [], []
+        for i, tros in enumerate(trossos):
+            r = self.asr_tros(x, tros, probs)
+            ajunta(paraules, r.pop("paraules"))
             resultats.append(r)
             if progres:
                 progres(i + 1, len(trossos), r)
-        paraules: list[dict] = []
-        for r in resultats:
-            ajunta(paraules, r["paraules"])
-
-        t0 = time.perf_counter()
-        if puntua and paraules:
+        t1 = time.perf_counter()
+        if paraules:
             for p, (w, s) in zip(paraules, self.puntuador.puntua([p["text"] for p in paraules])):
                 p["cru"], p["text"], p["punt"] = p["text"], w, s
-        t_punt = time.perf_counter() - t0
-
-        total = time.perf_counter() - t_total
-        temps = {"vad": t_vad, "puntuacio": t_punt, "total": total,
-                 **{k: sum(r["temps"][k] for r in resultats) for k in ("mel", "encoder", "decoder")}}
+        total = time.perf_counter() - t0
+        temps = {"vad": t_vad, "puntuacio": time.perf_counter() - t1, "total": total,
+                 **{k: sum(r["temps"][k] for r in resultats) for k in ("encoder", "decoder")}}
         temps = {k: round(v, 3) for k, v in temps.items()}
         temps["rtf"] = round(total / durada, 4) if durada else None
-        return {
-            "versio": VERSIO,
-            "durada_s": round(durada, 3),
-            "text": " ".join(p["text"] + (p.get("punt") or "") for p in paraules),
-            "paraules": paraules,
-            "trossos": [{k: v for k, v in r.items() if k != "paraules"} for r in resultats],
-            "temps": temps,
-        }
+        return {"durada_s": round(durada, 3),
+                "text": " ".join(p["text"] + (p.get("punt") or "") for p in paraules),
+                "paraules": paraules, "trossos": resultats, "temps": temps}
