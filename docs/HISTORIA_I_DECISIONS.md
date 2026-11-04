@@ -1,6 +1,6 @@
 # Subtitulador català al navegador — història, decisions i passos pendents
 
-*Ferran Artero Merino · beca ValgrAI (VRAIN-UPV) · estat a 3 de novembre de 2026*
+*Ferran Artero Merino · beca ValgrAI (VRAIN-UPV) · estat a 4 de novembre de 2026*
 
 Aquest document explica tot el procés fins ara: quin problema volem resoldre, què hem fet, quins
 problemes hem trobat, com els hem resolt, per què hem pres cada decisió i què queda per fer.
@@ -132,9 +132,9 @@ Abans de les respostes vam preparar un pla B: entrenar el nostre propi puntuador
 | 0 | Repositori, GitHub Pages, llicència, estructura | ✅ |
 | 1 | Convertir els models a ONNX i comprovar que no perden qualitat | ✅ |
 | 2 | Motor de referència en Python (només numpy + onnxruntime) | ✅ |
-| 3 | Motor en JavaScript al navegador + decisió de viabilitat | ⏭️ següent |
+| 3 | Motor en JavaScript al navegador + decisió de viabilitat | 🔶 motor fet i validat; falta la pàgina del navegador |
 | 4 | Publicar els models a Hugging Face | pendent |
-| 5 | Segmentació i format dels subtítols (es pot fer en paral·lel a la 3) | pendent |
+| 5 | Segmentació i format dels subtítols | ✅ (feta abans de la 3) |
 | 6 | Interfície web | pendent |
 | 7 | Robustesa (vídeos llargs, mòbils, errors) | pendent |
 | 8 | Proves automàtiques | pendent |
@@ -144,9 +144,10 @@ Abans de les respostes vam preparar un pla B: entrenar el nostre propi puntuador
 Hi ha dues carpetes:
 - **`ASR-CAT`** (OneDrive): és la recerca. Hi ha les dades, els experiments, els entorns i tots
   els scripts.
-- **`subtitols-ca`** (fora d'OneDrive, a GitHub): és el producte. Hi ha la web (`web/`) i les
-  eines per a generar els models (`eines/`). Les coses passen d'una carpeta a l'altra quan estan
-  acabades.
+- **`subtitols-ca`** (a GitHub; en local a `Desktop\Projectes\03_subtitols-ca\subtitols-ca`): és el
+  producte. Hi ha la web (`web/`, amb el motor en JavaScript), el motor de referència en Python i
+  les eines dels models (`eines/`) i les proves (`proves/`). **Des del 4 de novembre, tot el codi
+  nou es fa ací.** ASR-CAT es queda per a les dades, els models, els entorns i els experiments.
 
 ## 5. Fase 0 — Base del projecte
 
@@ -346,46 +347,183 @@ S'han copiat a `subtitols-ca/eines/`:
 També s'hi ha afegit `MODELS.md`, amb llicències i cites. Tots els fitxers porten la capçalera
 SPDX. Tot és pujat a GitHub.
 
-## 8. Passos pendents, en detall
+## 8. Fase 5 — Segmentació dels subtítols
 
-### Fase 3 — Motor en JavaScript (següent)
+La vam fer abans de la fase 3 perquè no necessita models i perquè és el que l'usuari veu.
 
-Objectiu: el mateix que `motor_ref`, però al navegador, i decidir si l'opció B és viable.
+### 8.1 Idea
 
-1. **Esquelet:**
-   - un *Web Worker*, perquè la pàgina no es bloquege mentre treballa;
-   - `onnxruntime-web` amb WASM, i WebGPU quan estiga disponible;
-   - els models es guarden amb la Cache API o OPFS perquè no s'hagen de tornar a baixar.
-2. **Fils d'execució.** El WASM amb diversos fils necessita `SharedArrayBuffer`, que exigeix
-   unes capçaleres especials (COOP/COEP). GitHub Pages no deixa posar capçaleres. Solució
-   coneguda: un *service worker* que les afig (com `coi-serviceworker`). Si no, el motor anirà
-   amb un sol fil, és a dir, més lent.
-3. **Lectura d'àudio:** descodificar el vídeo amb `AudioContext.decodeAudioData` o WebCodecs i
-   passar-lo a 16 kHz mono. Cal comprovar quins formats accepta cada navegador (`.mov` a
-   Android, `.mkv`…). Alternativa per als formats que fallen: `ffmpeg.wasm`, que és pesat.
-4. **Portar peça a peça, comprovant cada peça contra Python:**
-   - espectrograma (FFT, finestra, filtres mel): diferència < 10⁻³;
-   - VAD i trossos: mateixos trossos;
-   - encoder i bucle RNNT: mateixos tokens;
-   - paraules, apòstrofs i reparacions: mateix text;
-   - tokenitzador BPE dels puntuadors: mateixos ids (es pot fer servir el de transformers.js);
-   - puntuació i rescat (les tres etapes).
-   
-   Els JSON de `resultats/fase2/referencia/` contenen ids, instants, paraules i temps de cada
-   clip: serveixen de proves automàtiques.
-5. **Riscos que cal mesurar:**
-   - **Bucle del decodificador:** es fan milers de crides petites, i a onnxruntime-web cada
-     crida té un cost fix. Pot ser el coll d'ampolla.
-   - **`MatMulNBits`:** comprovar que l'encoder `q8w` funciona i va ràpid en WASM i en WebGPU.
-   - **Memòria als mòbils**, sobretot a iOS: uns 460 MB de models més la memòria de treball.
-6. **Prova en fp16 amb WebGPU:** un encoder en fp16 (≈ 240 MB) tindria la precisió de l'fp32. Si
-   el navegador té WebGPU, podria ser l'opció "màxima precisió".
-7. **Decisió de viabilitat (*go/no-go*):**
-   - mateix resultat que Python als 38 clips i al vídeo;
-   - temps acceptable al PC: prioritzem precisió, però ha de ser usable;
-   - que no pete en un mòbil de gamma mitjana.
-   
-   Si falla als mòbils: un mode "només ordinador", o models més petits per al mòbil.
+La segmentació va **després** de la transcripció i n'és independent: rep la llista de paraules
+amb inici, fi i signe (el JSON del motor) i decideix on tallar. No toca mai el text. Avantatge:
+a la web, canviar un paràmetre només torna a segmentar (mil·lisegons) i no torna a transcriure.
+
+### 8.2 Paràmetres
+
+Els dos de Softcatalà (caràcters per línia i línies per subtítol) i uns quants més:
+
+| Paràmetre | Horitzontal | Vertical (Reels, TikTok) | Accessibilitat |
+|---|---|---|---|
+| Línies × caràcters | 2 × 42 | 1 × 22 | 2 × 37 |
+| Caràcters/s màxims (cost suau) | 17 | 22 | 13 |
+| Durada | 1–7 s | 0,5–3 s | 1,5–7 s |
+| Buit mínim / enganxa al següent | 0,08 / 0,5 s | 0 / 1 s | 0,08 / 0,8 s |
+
+A més: paraules màximes per subtítol (estil "2–3 paraules de colp"), desfasament dels temps i
+**ressaltat de paraules** en tres modes: `paraula` (la que es diu), `progres` (karaoke: la frase
+sencera i les paraules dites es van pintant) i `acumula` (apareixen d'una en una). La marca pot
+ser subratllat, negreta, cursiva, color o fons (el fons només existeix en VTT; el SRT no en té).
+
+### 8.3 Com talla
+
+Programació dinàmica: es prova cada subtítol possible i es tria la partició de cost mínim.
+Tallar després d'un signe o d'una pausa és barat; és car tallar darrere d'un article, una
+preposició o un auxiliar (inclou l'article salat), dins d'un número ("dos mil | vint") o d'un
+nom propi, deixar una frase a mig subtítol, passar-se de caràcters/s o fer subtítols molt curts.
+El salt de línia es tria amb les mateixes regles i línies equilibrades.
+
+### 8.4 Resultats (vídeo de Daniel Sancho, contra l'antic `srt.py`)
+
+| | `srt.py` (fase 2) | Horitzontal |
+|---|---|---|
+| Línies de més de 42 caràcters | 11 | 0 |
+| Talls darrere d'article o preposició (subtítol / línia) | 21 / 24 | 0 / 0 |
+| Talls en un lloc natural (signe, pausa o davant de "que", "per"…) | 51 % | 89 % |
+
+Als altres dos vídeos, els talls naturals passen del 54–65 % al 94–100 %. Contra la referència
+de Daniel Sancho (1 línia de 24, que és un perfil vertical) el perfil vertical encerta el 34–36 %
+dels talls (orientatiu: hi ha moltes maneres bones de tallar). Els caràcters/s per damunt de 17
+són del locutor (~21 car/s, també a la referència): tallar d'una altra manera no ho arregla.
+
+### 8.5 Proves amb els editors
+
+- **Premiere:** importa el SRT i respecta `<u>` (subratllat). Falta provar `<b>`, `<i>`,
+  `<font color>` i el VTT (fitxer de prova: `ASR-CAT/resultats/fase5/prova_etiquetes.srt`).
+- **Film Craft:** amaga les etiquetes però no les aplica: allà només serveix `acumula`.
+
+## 9. Neteja i pas al repositori (4 de novembre)
+
+Abans de començar el JavaScript vam deixar el Python com a producte final i el vam passar al
+repositori. Etiqueta de git **`motor-python-v1`** (còpia de seguretat de l'estat validat) i còpia
+del codi d'ASR-CAT a `ASR-CAT/copies/ASR-CAT_codi_2026-11-04.zip`.
+
+- **Fora:** les variants de models esborrades (int8, int8pc, q4w), les opcions d'experiment
+  (penalització fixa, triar el model de majúscules, paràmetres del rescat a l'ordre), `srt.py`
+  i funcions que ja no s'usaven. El motor passa de 284 a 195 línies (−20 % en total).
+- **Models:** els 6 scripts `onnx_*.py` ara són 5 a `eines/models/`.
+- **Una sola ordre:** `eines/transcriu.py` transcriu i segmenta (o només segmenta si li passes
+  el JSON) i escriu a `resultats/`, que git ignora.
+- **Lectura d'àudio:** librosa (pesada) → `soundfile` + `soxr`, que dona el mateix senyal
+  exacte. Llegir-ho tot amb ffmpeg canviava el text i empitjorava el WER formatat (13,66 % →
+  13,8–14,0 %): descartat.
+- **Comprovació:** abans i després de la neteja, els 38 clips i els 3 vídeos donen el mateix
+  resultat (text, temps, signes, tokens i rescat): 41/41.
+
+Estructura del repositori:
+
+```
+subtitols-ca/
+├── web/
+│   ├── index.html, previsualitza.html
+│   └── js/  subtitols.js, previsualitza.js
+│        └── motor/  npy, mel, vad, rnnt, paraules, comu, motor, bpe, puntua
+├── eines/  transcriu.py, motor_ref/ (Python), models/ (generar els ONNX)
+├── proves/ casos de Python i proves de Node que els comparen amb JS
+└── docs/, MODELS.md, README.md, LICENSE, NOTICE
+```
+
+## 10. Fase 3 — Motor en JavaScript
+
+### 10.1 Decisions
+
+- **onnxruntime-web 1.29.0** (agost de 2026). Carrega l'encoder `q8w` (MatMulNBits) sense
+  problemes, que era un dels riscos.
+- Els mòduls reben `ort` des de fora: el mateix codi funciona al navegador i a Node (proves).
+- Cada peça es porta línia a línia des del Python i es compara amb referències que desa
+  `proves/referencia_motor.py` (àudio, probabilitats del VAD, espectrograma de cada tros,
+  tokens, rescat i paraules).
+- Primer la segmentació (no necessita models), amb una pàgina de previsualització: vídeo + JSON,
+  paràmetres en temps real (2–7 ms per recalcular), subtítols damunt del vídeo i baixada de
+  SRT/VTT/TXT.
+
+### 10.2 Validació peça a peça (38 clips + 3 vídeos)
+
+| Peça | Resultat |
+|---|---|
+| `subtitols.js` | SRT, VTT i TXT idèntics a Python: 108/108 casos (3 vídeos × 3 perfils × 12 combinacions) |
+| `mel.js` | diferència màxima de l'espectrograma 4·10⁻⁶ (objectiu < 10⁻³) |
+| `vad.js` | trossos idèntics 41/41 (probabilitats a 3·10⁻⁶) |
+| `rnnt.js` | tokens i trames idèntics en tots els trossos |
+| `paraules.js` + `motor.js` | **41/41 idèntics**: tokens, cada pas del rescat i cada paraula amb el seu inici i fi (els vídeos tenen 5, 4 i 12 trossos amb rescat) |
+| `bpe.js` | ids del tokenitzador idèntics a `tokenizers`: 657/657 per model |
+| `puntua.js` | majúscules (UMU) idèntiques; signes 1.970/2.015 paraules iguals, amb la mateixa qualitat |
+
+Els signes no poden ser idèntics: el model de Softcatalà `q8pc` és int8 dinàmic, i aquests
+càlculs en enters donen resultats lleugerament diferents en cada plataforma (fins a 0,63 als
+logits). Passava també entre dues instal·lacions de Python (el Windows i la màquina virtual).
+La qualitat és la mateixa:
+
+| | WER formatat | F1 signes | F1 majúscules |
+|---|---|---|---|
+| 38 clips, Python → JS | 13,66 % → 13,66 % | 0,807 → 0,803 | 0,867 → 0,875 |
+| Daniel Sancho, Python → JS | 14,14 % → 14,29 % | 0,780 → 0,780 | 0,903 → 0,902 |
+
+Si algun dia cal la igualtat exacta, el puntuador es pot quantitzar només als pesos, com
+l'encoder (`q8w`).
+
+### 10.3 Problemes trobats
+
+| Problema | Causa | Solució |
+|---|---|---|
+| Paraules partides ("eixe" → "e ix e") | `tokens.txt` té finals de línia de Windows; Python els neteja sols | `rnnt.js` treu el `\r` |
+| Temps diferents en 1 ms | `round(x, 3)` de Python arrodoneix els empats al parell | `comu.js` imita `round` exactament (0 errors en 88.000 valors) |
+| Probabilitats del VAD sense sentit a la prova | Node reaprofita memòria en fitxers petits | llegir el `.npy` amb el seu desplaçament |
+| Les proves llargues no acabaven | cada ordre al PC té un límit de 3 minuts | proves reprenibles, tros a tros |
+
+### 10.4 Rendiment: Python contra JavaScript
+
+Mateixa màquina (la màquina virtual de 2 nuclis del PC, més lenta que el PC); Python amb
+onnxruntime natiu i 2 fils; JavaScript a Node amb onnxruntime-web (WASM) i **1 fil**.
+Temps en segons; RTF = temps / durada.
+
+| Àudio (durada) | | VAD | ASR (mel + encoder + bucle + rescat) | Puntuació | Total | RTF |
+|---|---|---|---|---|---|---|
+| 38 clips (261 s) | Python | 3,8 | 40,8 | 3,4 | 48,1 | 0,18 |
+| | JS | 3,9 | 185,3 | 8,5 | 197,7 | 0,76 |
+| Daniel Sancho (169 s; 5 trossos amb rescat) | Python | 1,0 | 34,2 | 1,3 | 36,5 | 0,22 |
+| | JS | 3,8 | 157,9 | 9,5 | 171,2 | 1,02 |
+| Raquel (127 s; 4 amb rescat) | Python | 0,9 | 67,9 | 1,2 | 70,0 | 0,55 |
+| | JS | 1,8 | 266,8 | 4,1 | 272,7 | 2,15 |
+| prova_anamfent (221 s; 12 amb rescat) | Python | 1,6 | 70,4 | 0,9 | 72,9 | 0,33 |
+| | JS | 3,4 | 323,4 | 7,2 | 334,0 | 1,51 |
+
+- JS va **unes 4–5 vegades més lent** (tenint en compte que Python fa servir 2 fils i JS 1,
+  són unes 2 vegades per fil).
+- Dins de l'ASR de JS, **l'encoder és el 85–90 %** (Daniel: 136 de 158 s; anamfent: 272 de
+  323 s). El bucle del decoder costa 1,7 ms per crida (20–50 s per vídeo). El risc que temíem
+  (milers de crides petites) no és el problema; separar decoder i joint ja no és prioritari.
+- El rescat encareix molt els àudios amb música (Raquel, anamfent): l'etapa 2 torna a passar
+  l'encoder fins a 4 vegades per forat.
+- L'espectrograma (≈ 1 s per vídeo) i el VAD (2–4 s) no compten.
+- Les mesures varien amb la càrrega de la màquina (el mateix vídeo de Daniel en Python ha anat
+  de 36 a 68 s en dies diferents).
+
+Com recuperar-ho, per ordre: WASM amb diversos fils al navegador (cal el *service worker* de
+COOP/COEP); WebGPU per a l'encoder; abaratir l'etapa 2 del rescat. Tot s'ha de mesurar ja al
+navegador i al PC de l'usuari, no a Node.
+
+## 11. Passos pendents, en detall
+
+### Fase 3 — Acabar: la pàgina del navegador
+
+- Un Web Worker amb el motor; la pàgina només mostra el progrés.
+- Models en memòria cau (Cache API o OPFS), amb barra de progrés de la primera baixada.
+- Lectura de l'àudio del vídeo: `decodeAudioData` o WebCodecs i re-mostreig a 16 kHz (si un
+  format falla, `ffmpeg.wasm`). Comprovar que el re-mostreig del navegador no empitjora el WER.
+- Fils WASM: `SharedArrayBuffer` necessita COOP/COEP; GitHub Pages no deixa posar capçaleres →
+  *service worker* tipus `coi-serviceworker`.
+- WebGPU per a l'encoder (q8w o fp16, ≈ 240 MB).
+- **Decisió de viabilitat:** mateix resultat que Python (fet), temps usable al PC i que no pete
+  en un mòbil de gamma mitjana.
 
 ### Fase 4 — Publicar els models a Hugging Face
 
@@ -399,28 +537,8 @@ Objectiu: el mateix que `motor_ref`, però al navegador, i decidir si l'opció B
 - Comprovar que la web pot baixar els fitxers de Hugging Face (CORS) i que es guarden en memòria
   cau.
 
-### Fase 5 — Segmentació i format dels subtítols
 
-És el que dona qualitat al resultat final. Proposta:
-
-- **Paràmetres configurables:**
-  - caràcters per línia: uns 42 per a vídeo horitzontal; per a Reels/TikTok, 1 línia d'uns
-    20–25 caràcters;
-  - línies per subtítol (1–2);
-  - velocitat de lectura màxima (17–20 caràcters/s);
-  - durada mínima i màxima (uns 0,8 s i 6–7 s);
-  - separació mínima entre subtítols.
-- **Regles de tall:**
-  - primer per signes de puntuació i pauses;
-  - no separar article i nom ni preposició i nom;
-  - línies equilibrades.
-- **Perfils predefinits:** horitzontal, vertical i accessibilitat.
-- **Sincronia:** decidir si corregim el desfasament de +0,08 s (avançar els subtítols 0,08 s).
-
-L'avantatge respecte a Softcatalà: tenim el temps de cada paraula i la puntuació, així que podem
-tallar millor.
-
-### Fase 6 — Interfície
+### Fase 6 — Interfície i editor
 
 - Pujar el fitxer (o arrossegar-lo), barra de progrés, previsualització del vídeo amb els
   subtítols i botó de descàrrega.
@@ -429,8 +547,8 @@ tallar millor.
   - TXT;
   - JSON amb el temps de cada paraula;
   - opcionalment ASS, amb estil.
-- **Opció "ressalta cada paraula"** (com Softcatalà): en SRT es fa repetint el subtítol amb la
-  paraula activa marcada; en VTT o ASS, amb marques de temps per paraula.
+- **Opció "ressalta cada paraula"**: ja feta a la fase 5 (`subtitols.js`); falta posar-la a la
+  interfície. La previsualització (`previsualitza.html`) és el punt de partida.
 - **Editor de la transcripció:** fas clic en una paraula i el vídeo salta allí; corregeixes
   paraules sense perdre els temps; buscar i substituir.
 - **Sobre l'estil:** el SRT només guarda text i temps. La font, la mida, la posició i els colors
@@ -441,6 +559,14 @@ tallar millor.
   La nostra eina ha de donar el millor text, els millors temps i els millors talls, i deixar
   l'estil a l'editor.
 
+- **Editor de la transcripció (disseny acordat):** s'edita la llista de paraules, no el text del
+  subtítol, perquè les correccions no es perden en canviar un paràmetre. Si el nombre de paraules
+  no canvia, cada paraula conserva els seus temps; si canvia, es reparteixen per caràcters. Es
+  torna a segmentar en acabar d'editar un subtítol (no mentre s'escriu). Desfer, i desar les
+  correccions amb el JSON.
+- Les correccions són dades per a ajustar el Conformer (fase 10): un dia, opcionalment i amb el
+  consentiment de l'usuari, es podrien enviar.
+
 ### Fase 7 — Robustesa
 
 - Vídeos llargs (més d'1 hora): llegir l'àudio per parts per a no omplir la memòria.
@@ -450,16 +576,18 @@ tallar millor.
 
 ### Fase 8 — Proves automàtiques
 
-- Proves unitàries del motor JavaScript contra els JSON de referència de Python.
+- Ja fetes a mà amb Node (`proves/`): segmentació, mel, VAD, RNNT, motor complet i puntuació.
+  Falta automatitzar-les i afegir-hi les de cap a cap.
 - Proves de cap a cap (*end-to-end*) amb Playwright: pujar un fitxer i comprovar el SRT.
 - Una petita "prova de regressió" amb els 38 clips i el vídeo, per a cada canvi.
 
 ### Fase 9 — Versió 1.0
 
-- README complet del repositori (ara només enllaça `MODELS.md`).
+- README del repositori actualitzat amb la web i com fer-la servir.
 - Un `CITATION.cff` perquè GitHub mostre com citar el projecte.
 - Opcionalment, un DOI a Zenodo.
 - Anunci: Softcatalà, la UMU, la beca i xarxes.
+
 
 ### Fase 10 — Millores
 
@@ -477,9 +605,17 @@ tallar millor.
   final o no ho faria.
 - **Més endavant:** subtítols en temps real i l'"Alexa catalana".
 
-## 9. Petits pendents immediats
+- **Exportar el vídeo amb els subtítols gravats** (estil CapCut): possible amb WebCodecs (ràpid
+  en Chrome, Edge i Safari recents) o `ffmpeg.wasm` (lent). Té sentit per a qui no fa servir
+  editor, però demana un editor d'estil (font, mida, posició, contorn). Després de la 1.0.
 
+## 12. Petits pendents immediats
+
+- [ ] Majúscula a mig de frase en interjeccions ("eh, **E** a dies d'avui"): probablement la
+      regla de noms "fiables" de la UMU; excloure paraules d'una lletra i interjeccions.
+- [ ] Provar a Premiere `<b>`, `<i>`, `<font color>` i el VTT; i a CapCut.
+- [ ] Decidir si `desfas` -0,08 s per defecte.
 - [ ] Comprovar que la llicència MIT de Softcatalà ja surt a Hugging Face.
-- [ ] Fer una referència de 2–3 minuts de `prova_anamfent` (és el cas difícil).
-- [ ] Ampliar el README del repositori `subtitols-ca`.
+- [ ] Fer una referència de 2–3 minuts de `prova_anamfent` (el cas difícil).
 - [ ] Afegir els resultats d'aquesta setmana a l'informe setmanal de la beca.
+- [ ] Opcional: esborrar de l'historial de GitHub `prova_raquel_apunt.json` i `.srt` (pujats per error).
