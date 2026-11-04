@@ -9,9 +9,10 @@ Està pensat per a creadors de contingut en català, amb atenció especial al **
 
 🌐 **Web:** https://ferran-artero.github.io/subtitols-ca/
 
-> **Estat:** en desenvolupament. El motor de reconeixement i la segmentació dels subtítols ja
-> funcionen i estan validats en Python (`eines/`). Ara s'estan portant al navegador. Fins que no
-> estiga acabat, la web no transcriu.
+> **Estat:** en desenvolupament. El motor complet (reconeixement, puntuació i segmentació) ja
+> funciona en JavaScript i dona el mateix resultat que la versió de referència en Python. Falta
+> la pàgina que l'executa al navegador; mentrestant, `previsualitza.html` ja permet ajustar els
+> subtítols d'una transcripció feta amb `eines/transcriu.py`.
 
 ---
 
@@ -60,7 +61,9 @@ La majoria d'errors que queden són formes dialectals que el model normalitza ("
 ```
 subtitols-ca/
 ├── web/              # la pàgina (és l'única carpeta que es publica a GitHub Pages)
+│   └── js/           # segmentació (subtitols.js) i motor en JavaScript (motor/)
 ├── eines/            # motor de referència en Python i preparació dels models
+├── proves/          # comparen la versió JavaScript amb la de Python
 │   ├── transcriu.py  # àudio o vídeo -> subtítols, des de la línia d'ordres
 │   ├── motor_ref/    # el motor complet (numpy + onnxruntime + tokenizers) i la segmentació
 │   └── models/       # converteixen i quantitzen els models a ONNX
@@ -92,7 +95,7 @@ Quan estiguen publicats a Hugging Face, n'hi haurà prou de baixar-los.
 - [x] **Fase 0:** repositori, GitHub Pages i llicència
 - [x] **Fase 1:** models convertits a ONNX i quantitzats sense perdre qualitat
 - [x] **Fase 2:** motor de referència en Python, validat peça a peça
-- [ ] **Fase 3:** motor en JavaScript al navegador (WASM / WebGPU)
+- [ ] **Fase 3:** motor en JavaScript al navegador (WASM / WebGPU) — motor fet i validat; falta la pàgina
 - [ ] **Fase 4:** models publicats a Hugging Face
 - [x] **Fase 5:** segmentació dels subtítols (caràcters per línia, velocitat de lectura, talls
       per frases, perfils per a vídeo horitzontal i vertical, ressaltat de paraules)
