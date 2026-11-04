@@ -1,0 +1,4134 @@
+{
+ "durada_s": 126.711,
+ "text": "Entonces a aquestes hores, tota la informació que tinguem es a través de prensa em. Nosaltres sí que estem personades com a víctimes en el cas i no puguem entendre com tants dies després encara no tinguem la resolució a la nostra mà per poder llegir per lo menys i saber, E, eh, pues lo que diu eixa eixa resolució, eh, E a dies d'avui, e ni tan sols sabem quien es el nostre asesor victimal, perquè nosaltres tinguem el nostre dret en mèxic a tindre una persona que que ens represente, un assessor legal. Entonces estic, eh, tocant a Fiscalia, estic tocant a drets humans, estic tocant al Consulat Espanyol, estic tocant em a l'assessorament jurídic de de víctimes de de Tamaulipas. Bueno, pues, és tornar, pareix que que que que que este cas sempre tingam que que lluitar per algo. Desgraciadament, vull dir: jo confio en la justícia mexicana, jo lo que no vull que el cas de la meua germana quede arxivat en en un caixó, voldria aplegar a la veritat, voldria que es fera justícia ací la víctima és la meua germana la que la que s'ha quedat sense vida és ella i hem de lluitar per ella per a que es faça justícia d'una manera o altra, que ja te dic que nosaltres, com a família, lo que vulguem és justícia, eh, siga qui siga el que haja comès eixe assassinat, eh, no pot quedar impune. S'ha d'investigar si Jorge no ha sigut, si Jorge no ha sigut, aleshores qui ha sigut. Què ha passat amb la mort de la meua germana? N'hi ha un menor, que n'hi ha que protegir. Eixa ha sigut la meua missió durant nou anys i vau continuar sent la meua missió, i Y i per a la meua germana demano justícia, siga la que siga.",
+ "paraules": [
+  {
+   "text": "Entonces",
+   "ini": 0.28,
+   "fi": 0.84,
+   "cru": "entonces",
+   "punt": null
+  },
+  {
+   "text": "a",
+   "ini": 1.08,
+   "fi": 1.12,
+   "cru": "a",
+   "punt": null
+  },
+  {
+   "text": "aquestes",
+   "ini": 1.24,
+   "fi": 1.44,
+   "cru": "aquestes",
+   "punt": null
+  },
+  {
+   "text": "hores",
+   "ini": 1.6,
+   "fi": 1.84,
+   "cru": "hores",
+   "punt": ","
+  },
+  {
+   "text": "tota",
+   "ini": 1.92,
+   "fi": 2.08,
+   "cru": "tota",
+   "punt": null
+  },
+  {
+   "text": "la",
+   "ini": 2.16,
+   "fi": 2.2,
+   "cru": "la",
+   "punt": null
+  },
+  {
+   "text": "informació",
+   "ini": 2.24,
+   "fi": 2.6,
+   "cru": "informació",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 2.72,
+   "fi": 2.76,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "tinguem",
+   "ini": 2.88,
+   "fi": 3.32,
+   "cru": "tinguem",
+   "punt": null
+  },
+  {
+   "text": "es",
+   "ini": 3.72,
+   "fi": 3.76,
+   "cru": "es",
+   "punt": null
+  },
+  {
+   "text": "a",
+   "ini": 4.28,
+   "fi": 4.32,
+   "cru": "a",
+   "punt": null
+  },
+  {
+   "text": "través",
+   "ini": 4.36,
+   "fi": 4.64,
+   "cru": "través",
+   "punt": null
+  },
+  {
+   "text": "de",
+   "ini": 4.68,
+   "fi": 4.72,
+   "cru": "de",
+   "punt": null
+  },
+  {
+   "text": "prensa",
+   "ini": 4.8,
+   "fi": 5.2,
+   "cru": "prensa",
+   "punt": null
+  },
+  {
+   "text": "em",
+   "ini": 6.33,
+   "fi": 6.77,
+   "cru": "em",
+   "punt": "."
+  },
+  {
+   "text": "Nosaltres",
+   "ini": 7.288,
+   "fi": 7.688,
+   "cru": "nosaltres",
+   "punt": null
+  },
+  {
+   "text": "sí",
+   "ini": 7.728,
+   "fi": 7.848,
+   "cru": "sí",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 7.888,
+   "fi": 7.928,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "estem",
+   "ini": 8.008,
+   "fi": 8.128,
+   "cru": "estem",
+   "punt": null
+  },
+  {
+   "text": "personades",
+   "ini": 8.208,
+   "fi": 8.648,
+   "cru": "personades",
+   "punt": null
+  },
+  {
+   "text": "com",
+   "ini": 9.168,
+   "fi": 9.208,
+   "cru": "com",
+   "punt": null
+  },
+  {
+   "text": "a",
+   "ini": 9.368,
+   "fi": 9.408,
+   "cru": "a",
+   "punt": null
+  },
+  {
+   "text": "víctimes",
+   "ini": 9.488,
+   "fi": 9.928,
+   "cru": "víctimes",
+   "punt": null
+  },
+  {
+   "text": "en",
+   "ini": 10.408,
+   "fi": 10.448,
+   "cru": "en",
+   "punt": null
+  },
+  {
+   "text": "el",
+   "ini": 10.688,
+   "fi": 10.728,
+   "cru": "el",
+   "punt": null
+  },
+  {
+   "text": "cas",
+   "ini": 10.888,
+   "fi": 11.008,
+   "cru": "cas",
+   "punt": null
+  },
+  {
+   "text": "i",
+   "ini": 11.368,
+   "fi": 11.408,
+   "cru": "i",
+   "punt": null
+  },
+  {
+   "text": "no",
+   "ini": 11.688,
+   "fi": 11.728,
+   "cru": "no",
+   "punt": null
+  },
+  {
+   "text": "puguem",
+   "ini": 12.008,
+   "fi": 12.328,
+   "cru": "puguem",
+   "punt": null
+  },
+  {
+   "text": "entendre",
+   "ini": 12.608,
+   "fi": 12.968,
+   "cru": "entendre",
+   "punt": null
+  },
+  {
+   "text": "com",
+   "ini": 13.128,
+   "fi": 13.168,
+   "cru": "com",
+   "punt": null
+  },
+  {
+   "text": "tants",
+   "ini": 13.448,
+   "fi": 13.688,
+   "cru": "tants",
+   "punt": null
+  },
+  {
+   "text": "dies",
+   "ini": 13.848,
+   "fi": 14.008,
+   "cru": "dies",
+   "punt": null
+  },
+  {
+   "text": "després",
+   "ini": 14.168,
+   "fi": 14.488,
+   "cru": "després",
+   "punt": null
+  },
+  {
+   "text": "encara",
+   "ini": 15.328,
+   "fi": 15.808,
+   "cru": "encara",
+   "punt": null
+  },
+  {
+   "text": "no",
+   "ini": 16.048,
+   "fi": 16.088,
+   "cru": "no",
+   "punt": null
+  },
+  {
+   "text": "tinguem",
+   "ini": 16.208,
+   "fi": 16.488,
+   "cru": "tinguem",
+   "punt": null
+  },
+  {
+   "text": "la",
+   "ini": 16.568,
+   "fi": 16.608,
+   "cru": "la",
+   "punt": null
+  },
+  {
+   "text": "resolució",
+   "ini": 16.888,
+   "fi": 17.288,
+   "cru": "resolució",
+   "punt": null
+  },
+  {
+   "text": "a",
+   "ini": 17.448,
+   "fi": 17.488,
+   "cru": "a",
+   "punt": null
+  },
+  {
+   "text": "la",
+   "ini": 17.648,
+   "fi": 17.688,
+   "cru": "la",
+   "punt": null
+  },
+  {
+   "text": "nostra",
+   "ini": 17.768,
+   "fi": 17.968,
+   "cru": "nostra",
+   "punt": null
+  },
+  {
+   "text": "mà",
+   "ini": 18.088,
+   "fi": 18.248,
+   "cru": "mà",
+   "punt": null
+  },
+  {
+   "text": "per",
+   "ini": 18.568,
+   "fi": 18.608,
+   "cru": "per",
+   "punt": null
+  },
+  {
+   "text": "poder",
+   "ini": 18.928,
+   "fi": 19.128,
+   "cru": "poder",
+   "punt": null
+  },
+  {
+   "text": "llegir",
+   "ini": 19.288,
+   "fi": 19.568,
+   "cru": "llegir",
+   "punt": null
+  },
+  {
+   "text": "per",
+   "ini": 19.728,
+   "fi": 19.768,
+   "cru": "per",
+   "punt": null
+  },
+  {
+   "text": "lo",
+   "ini": 19.848,
+   "fi": 19.968,
+   "cru": "lo",
+   "punt": null
+  },
+  {
+   "text": "menys",
+   "ini": 20.008,
+   "fi": 20.208,
+   "cru": "menys",
+   "punt": null
+  },
+  {
+   "text": "i",
+   "ini": 20.288,
+   "fi": 20.328,
+   "cru": "i",
+   "punt": null
+  },
+  {
+   "text": "saber",
+   "ini": 20.488,
+   "fi": 20.688,
+   "cru": "saber",
+   "punt": ","
+  },
+  {
+   "text": "E",
+   "ini": 20.89,
+   "fi": 20.93,
+   "cru": "e",
+   "punt": ","
+  },
+  {
+   "text": "eh",
+   "ini": 20.968,
+   "fi": 21.168,
+   "cru": "eh",
+   "punt": ","
+  },
+  {
+   "text": "pues",
+   "ini": 22.048,
+   "fi": 22.248,
+   "cru": "pues",
+   "punt": null
+  },
+  {
+   "text": "lo",
+   "ini": 22.368,
+   "fi": 22.448,
+   "cru": "lo",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 22.488,
+   "fi": 22.528,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "diu",
+   "ini": 22.648,
+   "fi": 22.808,
+   "cru": "diu",
+   "punt": null
+  },
+  {
+   "text": "eixa",
+   "ini": 22.968,
+   "fi": 23.168,
+   "cru": "eixa",
+   "punt": null
+  },
+  {
+   "text": "eixa",
+   "ini": 23.328,
+   "fi": 23.608,
+   "cru": "eixa",
+   "punt": null
+  },
+  {
+   "text": "resolució",
+   "ini": 23.728,
+   "fi": 24.168,
+   "cru": "resolució",
+   "punt": ","
+  },
+  {
+   "text": "eh",
+   "ini": 24.808,
+   "fi": 25.128,
+   "cru": "eh",
+   "punt": ","
+  },
+  {
+   "text": "E",
+   "ini": 24.85,
+   "fi": 24.89,
+   "cru": "e",
+   "punt": null
+  },
+  {
+   "text": "a",
+   "ini": 25.768,
+   "fi": 25.808,
+   "cru": "a",
+   "punt": null
+  },
+  {
+   "text": "dies",
+   "ini": 25.968,
+   "fi": 26.168,
+   "cru": "dies",
+   "punt": null
+  },
+  {
+   "text": "d'avui",
+   "ini": 26.248,
+   "fi": 26.608,
+   "cru": "d'avui",
+   "punt": ","
+  },
+  {
+   "text": "e",
+   "ini": 26.93,
+   "fi": 26.97,
+   "cru": "e",
+   "punt": null
+  },
+  {
+   "text": "ni",
+   "ini": 27.568,
+   "fi": 27.728,
+   "cru": "ni",
+   "punt": null
+  },
+  {
+   "text": "tan",
+   "ini": 27.728,
+   "fi": 27.768,
+   "cru": "tan",
+   "punt": null
+  },
+  {
+   "text": "sols",
+   "ini": 27.768,
+   "fi": 27.888,
+   "cru": "sols",
+   "punt": null
+  },
+  {
+   "text": "sabem",
+   "ini": 28.168,
+   "fi": 28.408,
+   "cru": "sabem",
+   "punt": null
+  },
+  {
+   "text": "quien",
+   "ini": 29.232,
+   "fi": 29.472,
+   "cru": "quien",
+   "punt": null
+  },
+  {
+   "text": "es",
+   "ini": 29.632,
+   "fi": 29.672,
+   "cru": "es",
+   "punt": null
+  },
+  {
+   "text": "el",
+   "ini": 29.872,
+   "fi": 29.912,
+   "cru": "el",
+   "punt": null
+  },
+  {
+   "text": "nostre",
+   "ini": 30.152,
+   "fi": 30.512,
+   "cru": "nostre",
+   "punt": null
+  },
+  {
+   "text": "asesor",
+   "ini": 30.712,
+   "fi": 31.112,
+   "cru": "asesor",
+   "punt": null
+  },
+  {
+   "text": "victimal",
+   "ini": 31.232,
+   "fi": 31.752,
+   "cru": "victimal",
+   "punt": ","
+  },
+  {
+   "text": "perquè",
+   "ini": 32.528,
+   "fi": 32.808,
+   "cru": "perquè",
+   "punt": null
+  },
+  {
+   "text": "nosaltres",
+   "ini": 32.968,
+   "fi": 33.288,
+   "cru": "nosaltres",
+   "punt": null
+  },
+  {
+   "text": "tinguem",
+   "ini": 33.368,
+   "fi": 33.648,
+   "cru": "tinguem",
+   "punt": null
+  },
+  {
+   "text": "el",
+   "ini": 33.768,
+   "fi": 33.808,
+   "cru": "el",
+   "punt": null
+  },
+  {
+   "text": "nostre",
+   "ini": 33.968,
+   "fi": 34.248,
+   "cru": "nostre",
+   "punt": null
+  },
+  {
+   "text": "dret",
+   "ini": 34.328,
+   "fi": 34.528,
+   "cru": "dret",
+   "punt": null
+  },
+  {
+   "text": "en",
+   "ini": 34.568,
+   "fi": 34.608,
+   "cru": "en",
+   "punt": null
+  },
+  {
+   "text": "mèxic",
+   "ini": 34.728,
+   "fi": 35.048,
+   "cru": "mèxic",
+   "punt": null
+  },
+  {
+   "text": "a",
+   "ini": 35.168,
+   "fi": 35.208,
+   "cru": "a",
+   "punt": null
+  },
+  {
+   "text": "tindre",
+   "ini": 35.328,
+   "fi": 35.528,
+   "cru": "tindre",
+   "punt": null
+  },
+  {
+   "text": "una",
+   "ini": 35.608,
+   "fi": 35.648,
+   "cru": "una",
+   "punt": null
+  },
+  {
+   "text": "persona",
+   "ini": 35.768,
+   "fi": 36.088,
+   "cru": "persona",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 36.208,
+   "fi": 36.248,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 36.408,
+   "fi": 36.448,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "ens",
+   "ini": 36.608,
+   "fi": 36.768,
+   "cru": "ens",
+   "punt": null
+  },
+  {
+   "text": "represente",
+   "ini": 36.848,
+   "fi": 37.368,
+   "cru": "represente",
+   "punt": ","
+  },
+  {
+   "text": "un",
+   "ini": 37.408,
+   "fi": 37.448,
+   "cru": "un",
+   "punt": null
+  },
+  {
+   "text": "assessor",
+   "ini": 37.528,
+   "fi": 37.808,
+   "cru": "assessor",
+   "punt": null
+  },
+  {
+   "text": "legal",
+   "ini": 37.928,
+   "fi": 38.208,
+   "cru": "legal",
+   "punt": "."
+  },
+  {
+   "text": "Entonces",
+   "ini": 39.088,
+   "fi": 39.568,
+   "cru": "entonces",
+   "punt": null
+  },
+  {
+   "text": "estic",
+   "ini": 39.768,
+   "fi": 40.168,
+   "cru": "estic",
+   "punt": ","
+  },
+  {
+   "text": "eh",
+   "ini": 40.41,
+   "fi": 40.57,
+   "cru": "eh",
+   "punt": ","
+  },
+  {
+   "text": "tocant",
+   "ini": 41.048,
+   "fi": 41.448,
+   "cru": "tocant",
+   "punt": null
+  },
+  {
+   "text": "a",
+   "ini": 41.688,
+   "fi": 41.728,
+   "cru": "a",
+   "punt": null
+  },
+  {
+   "text": "Fiscalia",
+   "ini": 42.008,
+   "fi": 42.528,
+   "cru": "fiscalia",
+   "punt": ","
+  },
+  {
+   "text": "estic",
+   "ini": 43.368,
+   "fi": 43.728,
+   "cru": "estic",
+   "punt": null
+  },
+  {
+   "text": "tocant",
+   "ini": 43.808,
+   "fi": 44.168,
+   "cru": "tocant",
+   "punt": null
+  },
+  {
+   "text": "a",
+   "ini": 44.688,
+   "fi": 44.728,
+   "cru": "a",
+   "punt": null
+  },
+  {
+   "text": "drets",
+   "ini": 44.968,
+   "fi": 45.208,
+   "cru": "drets",
+   "punt": null
+  },
+  {
+   "text": "humans",
+   "ini": 45.288,
+   "fi": 45.688,
+   "cru": "humans",
+   "punt": ","
+  },
+  {
+   "text": "estic",
+   "ini": 46.328,
+   "fi": 46.728,
+   "cru": "estic",
+   "punt": null
+  },
+  {
+   "text": "tocant",
+   "ini": 46.808,
+   "fi": 47.248,
+   "cru": "tocant",
+   "punt": null
+  },
+  {
+   "text": "al",
+   "ini": 47.968,
+   "fi": 48.008,
+   "cru": "al",
+   "punt": null
+  },
+  {
+   "text": "Consulat",
+   "ini": 48.328,
+   "fi": 48.728,
+   "cru": "consulat",
+   "punt": null
+  },
+  {
+   "text": "Espanyol",
+   "ini": 48.848,
+   "fi": 49.288,
+   "cru": "espanyol",
+   "punt": ","
+  },
+  {
+   "text": "estic",
+   "ini": 49.928,
+   "fi": 50.288,
+   "cru": "estic",
+   "punt": null
+  },
+  {
+   "text": "tocant",
+   "ini": 50.408,
+   "fi": 50.808,
+   "cru": "tocant",
+   "punt": null
+  },
+  {
+   "text": "em",
+   "ini": 51.53,
+   "fi": 51.89,
+   "cru": "em",
+   "punt": null
+  },
+  {
+   "text": "a",
+   "ini": 52.528,
+   "fi": 52.568,
+   "cru": "a",
+   "punt": null
+  },
+  {
+   "text": "l'assessorament",
+   "ini": 52.688,
+   "fi": 53.248,
+   "cru": "l'assessorament",
+   "punt": null
+  },
+  {
+   "text": "jurídic",
+   "ini": 53.528,
+   "fi": 53.928,
+   "cru": "jurídic",
+   "punt": null
+  },
+  {
+   "text": "de",
+   "ini": 54.008,
+   "fi": 54.048,
+   "cru": "de",
+   "punt": null
+  },
+  {
+   "text": "de",
+   "ini": 54.248,
+   "fi": 54.288,
+   "cru": "de",
+   "punt": null
+  },
+  {
+   "text": "víctimes",
+   "ini": 54.528,
+   "fi": 55.008,
+   "cru": "víctimes",
+   "punt": null
+  },
+  {
+   "text": "de",
+   "ini": 55.128,
+   "fi": 55.168,
+   "cru": "de",
+   "punt": null
+  },
+  {
+   "text": "de",
+   "ini": 55.328,
+   "fi": 55.368,
+   "cru": "de",
+   "punt": null
+  },
+  {
+   "text": "Tamaulipas",
+   "ini": 55.648,
+   "fi": 56.448,
+   "cru": "tamaulipas",
+   "punt": "."
+  },
+  {
+   "text": "Bueno",
+   "ini": 57.344,
+   "fi": 57.584,
+   "cru": "bueno",
+   "punt": ","
+  },
+  {
+   "text": "pues",
+   "ini": 57.584,
+   "fi": 57.744,
+   "cru": "pues",
+   "punt": ","
+  },
+  {
+   "text": "és",
+   "ini": 57.824,
+   "fi": 57.864,
+   "cru": "és",
+   "punt": null
+  },
+  {
+   "text": "tornar",
+   "ini": 58.024,
+   "fi": 58.384,
+   "cru": "tornar",
+   "punt": ","
+  },
+  {
+   "text": "pareix",
+   "ini": 58.704,
+   "fi": 58.984,
+   "cru": "pareix",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 59.064,
+   "fi": 59.104,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 59.224,
+   "fi": 59.264,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 59.584,
+   "fi": 59.624,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 59.584,
+   "fi": 59.624,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 59.624,
+   "fi": 59.664,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "este",
+   "ini": 59.864,
+   "fi": 60.024,
+   "cru": "este",
+   "punt": null
+  },
+  {
+   "text": "cas",
+   "ini": 60.144,
+   "fi": 60.264,
+   "cru": "cas",
+   "punt": null
+  },
+  {
+   "text": "sempre",
+   "ini": 60.384,
+   "fi": 60.584,
+   "cru": "sempre",
+   "punt": null
+  },
+  {
+   "text": "tingam",
+   "ini": 60.664,
+   "fi": 60.984,
+   "cru": "tingam",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 61.144,
+   "fi": 61.184,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 61.664,
+   "fi": 61.704,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "lluitar",
+   "ini": 61.984,
+   "fi": 62.264,
+   "cru": "lluitar",
+   "punt": null
+  },
+  {
+   "text": "per",
+   "ini": 62.384,
+   "fi": 62.424,
+   "cru": "per",
+   "punt": null
+  },
+  {
+   "text": "algo",
+   "ini": 62.584,
+   "fi": 62.784,
+   "cru": "algo",
+   "punt": "."
+  },
+  {
+   "text": "Desgraciadament",
+   "ini": 63.304,
+   "fi": 63.984,
+   "cru": "desgraciadament",
+   "punt": ","
+  },
+  {
+   "text": "vull",
+   "ini": 64.224,
+   "fi": 64.424,
+   "cru": "vull",
+   "punt": null
+  },
+  {
+   "text": "dir",
+   "ini": 64.464,
+   "fi": 64.624,
+   "cru": "dir",
+   "punt": ":"
+  },
+  {
+   "text": "jo",
+   "ini": 65.384,
+   "fi": 65.624,
+   "cru": "jo",
+   "punt": null
+  },
+  {
+   "text": "confio",
+   "ini": 65.704,
+   "fi": 66.024,
+   "cru": "confio",
+   "punt": null
+  },
+  {
+   "text": "en",
+   "ini": 66.064,
+   "fi": 66.104,
+   "cru": "en",
+   "punt": null
+  },
+  {
+   "text": "la",
+   "ini": 66.144,
+   "fi": 66.184,
+   "cru": "la",
+   "punt": null
+  },
+  {
+   "text": "justícia",
+   "ini": 66.224,
+   "fi": 66.504,
+   "cru": "justícia",
+   "punt": null
+  },
+  {
+   "text": "mexicana",
+   "ini": 66.624,
+   "fi": 67.264,
+   "cru": "mexicana",
+   "punt": ","
+  },
+  {
+   "text": "jo",
+   "ini": 67.544,
+   "fi": 67.744,
+   "cru": "jo",
+   "punt": null
+  },
+  {
+   "text": "lo",
+   "ini": 67.784,
+   "fi": 67.904,
+   "cru": "lo",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 67.944,
+   "fi": 67.984,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "no",
+   "ini": 68.024,
+   "fi": 68.064,
+   "cru": "no",
+   "punt": null
+  },
+  {
+   "text": "vull",
+   "ini": 68.104,
+   "fi": 68.224,
+   "cru": "vull",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 68.264,
+   "fi": 68.304,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "el",
+   "ini": 68.344,
+   "fi": 68.384,
+   "cru": "el",
+   "punt": null
+  },
+  {
+   "text": "cas",
+   "ini": 68.424,
+   "fi": 68.504,
+   "cru": "cas",
+   "punt": null
+  },
+  {
+   "text": "de",
+   "ini": 68.544,
+   "fi": 68.584,
+   "cru": "de",
+   "punt": null
+  },
+  {
+   "text": "la",
+   "ini": 68.664,
+   "fi": 68.704,
+   "cru": "la",
+   "punt": null
+  },
+  {
+   "text": "meua",
+   "ini": 68.744,
+   "fi": 68.904,
+   "cru": "meua",
+   "punt": null
+  },
+  {
+   "text": "germana",
+   "ini": 68.904,
+   "fi": 69.184,
+   "cru": "germana",
+   "punt": null
+  },
+  {
+   "text": "quede",
+   "ini": 69.264,
+   "fi": 69.384,
+   "cru": "quede",
+   "punt": null
+  },
+  {
+   "text": "arxivat",
+   "ini": 69.464,
+   "fi": 69.784,
+   "cru": "arxivat",
+   "punt": null
+  },
+  {
+   "text": "en",
+   "ini": 69.864,
+   "fi": 69.904,
+   "cru": "en",
+   "punt": null
+  },
+  {
+   "text": "en",
+   "ini": 70.104,
+   "fi": 70.144,
+   "cru": "en",
+   "punt": null
+  },
+  {
+   "text": "un",
+   "ini": 70.384,
+   "fi": 70.424,
+   "cru": "un",
+   "punt": null
+  },
+  {
+   "text": "caixó",
+   "ini": 70.504,
+   "fi": 70.904,
+   "cru": "caixó",
+   "punt": ","
+  },
+  {
+   "text": "voldria",
+   "ini": 71.984,
+   "fi": 72.344,
+   "cru": "voldria",
+   "punt": null
+  },
+  {
+   "text": "aplegar",
+   "ini": 72.344,
+   "fi": 72.624,
+   "cru": "aplegar",
+   "punt": null
+  },
+  {
+   "text": "a",
+   "ini": 72.704,
+   "fi": 72.744,
+   "cru": "a",
+   "punt": null
+  },
+  {
+   "text": "la",
+   "ini": 72.784,
+   "fi": 72.824,
+   "cru": "la",
+   "punt": null
+  },
+  {
+   "text": "veritat",
+   "ini": 72.864,
+   "fi": 73.064,
+   "cru": "veritat",
+   "punt": ","
+  },
+  {
+   "text": "voldria",
+   "ini": 73.344,
+   "fi": 73.624,
+   "cru": "voldria",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 73.664,
+   "fi": 73.704,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "es",
+   "ini": 73.744,
+   "fi": 73.784,
+   "cru": "es",
+   "punt": null
+  },
+  {
+   "text": "fera",
+   "ini": 73.824,
+   "fi": 73.904,
+   "cru": "fera",
+   "punt": null
+  },
+  {
+   "text": "justícia",
+   "ini": 74.104,
+   "fi": 74.504,
+   "cru": "justícia",
+   "punt": null
+  },
+  {
+   "text": "ací",
+   "ini": 74.864,
+   "fi": 75.224,
+   "cru": "ací",
+   "punt": null
+  },
+  {
+   "text": "la",
+   "ini": 75.944,
+   "fi": 75.984,
+   "cru": "la",
+   "punt": null
+  },
+  {
+   "text": "víctima",
+   "ini": 76.184,
+   "fi": 76.584,
+   "cru": "víctima",
+   "punt": null
+  },
+  {
+   "text": "és",
+   "ini": 77.224,
+   "fi": 77.264,
+   "cru": "és",
+   "punt": null
+  },
+  {
+   "text": "la",
+   "ini": 77.464,
+   "fi": 77.504,
+   "cru": "la",
+   "punt": null
+  },
+  {
+   "text": "meua",
+   "ini": 77.584,
+   "fi": 77.744,
+   "cru": "meua",
+   "punt": null
+  },
+  {
+   "text": "germana",
+   "ini": 77.784,
+   "fi": 78.184,
+   "cru": "germana",
+   "punt": null
+  },
+  {
+   "text": "la",
+   "ini": 78.584,
+   "fi": 78.624,
+   "cru": "la",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 78.864,
+   "fi": 78.904,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "la",
+   "ini": 79.504,
+   "fi": 79.544,
+   "cru": "la",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 79.744,
+   "fi": 79.784,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "s'ha",
+   "ini": 79.824,
+   "fi": 79.984,
+   "cru": "s'ha",
+   "punt": null
+  },
+  {
+   "text": "quedat",
+   "ini": 80.024,
+   "fi": 80.184,
+   "cru": "quedat",
+   "punt": null
+  },
+  {
+   "text": "sense",
+   "ini": 80.264,
+   "fi": 80.424,
+   "cru": "sense",
+   "punt": null
+  },
+  {
+   "text": "vida",
+   "ini": 80.544,
+   "fi": 80.744,
+   "cru": "vida",
+   "punt": null
+  },
+  {
+   "text": "és",
+   "ini": 80.824,
+   "fi": 80.864,
+   "cru": "és",
+   "punt": null
+  },
+  {
+   "text": "ella",
+   "ini": 81.064,
+   "fi": 81.304,
+   "cru": "ella",
+   "punt": null
+  },
+  {
+   "text": "i",
+   "ini": 82.216,
+   "fi": 82.256,
+   "cru": "i",
+   "punt": null
+  },
+  {
+   "text": "hem",
+   "ini": 82.536,
+   "fi": 82.656,
+   "cru": "hem",
+   "punt": null
+  },
+  {
+   "text": "de",
+   "ini": 82.776,
+   "fi": 82.816,
+   "cru": "de",
+   "punt": null
+  },
+  {
+   "text": "lluitar",
+   "ini": 82.936,
+   "fi": 83.296,
+   "cru": "lluitar",
+   "punt": null
+  },
+  {
+   "text": "per",
+   "ini": 84.016,
+   "fi": 84.056,
+   "cru": "per",
+   "punt": null
+  },
+  {
+   "text": "ella",
+   "ini": 84.376,
+   "fi": 84.616,
+   "cru": "ella",
+   "punt": null
+  },
+  {
+   "text": "per",
+   "ini": 84.976,
+   "fi": 85.016,
+   "cru": "per",
+   "punt": null
+  },
+  {
+   "text": "a",
+   "ini": 85.216,
+   "fi": 85.256,
+   "cru": "a",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 85.296,
+   "fi": 85.336,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "es",
+   "ini": 85.376,
+   "fi": 85.416,
+   "cru": "es",
+   "punt": null
+  },
+  {
+   "text": "faça",
+   "ini": 85.496,
+   "fi": 85.736,
+   "cru": "faça",
+   "punt": null
+  },
+  {
+   "text": "justícia",
+   "ini": 85.816,
+   "fi": 86.216,
+   "cru": "justícia",
+   "punt": null
+  },
+  {
+   "text": "d'una",
+   "ini": 86.736,
+   "fi": 87.096,
+   "cru": "d'una",
+   "punt": null
+  },
+  {
+   "text": "manera",
+   "ini": 87.176,
+   "fi": 87.336,
+   "cru": "manera",
+   "punt": null
+  },
+  {
+   "text": "o",
+   "ini": 87.376,
+   "fi": 87.416,
+   "cru": "o",
+   "punt": null
+  },
+  {
+   "text": "altra",
+   "ini": 87.576,
+   "fi": 87.736,
+   "cru": "altra",
+   "punt": ","
+  },
+  {
+   "text": "que",
+   "ini": 88.376,
+   "fi": 88.416,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "ja",
+   "ini": 88.776,
+   "fi": 88.976,
+   "cru": "ja",
+   "punt": null
+  },
+  {
+   "text": "te",
+   "ini": 89.016,
+   "fi": 89.136,
+   "cru": "te",
+   "punt": null
+  },
+  {
+   "text": "dic",
+   "ini": 89.176,
+   "fi": 89.296,
+   "cru": "dic",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 89.416,
+   "fi": 89.456,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "nosaltres",
+   "ini": 89.736,
+   "fi": 90.256,
+   "cru": "nosaltres",
+   "punt": ","
+  },
+  {
+   "text": "com",
+   "ini": 90.416,
+   "fi": 90.456,
+   "cru": "com",
+   "punt": null
+  },
+  {
+   "text": "a",
+   "ini": 90.536,
+   "fi": 90.576,
+   "cru": "a",
+   "punt": null
+  },
+  {
+   "text": "família",
+   "ini": 90.696,
+   "fi": 91.096,
+   "cru": "família",
+   "punt": ","
+  },
+  {
+   "text": "lo",
+   "ini": 91.776,
+   "fi": 91.936,
+   "cru": "lo",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 91.976,
+   "fi": 92.016,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "vulguem",
+   "ini": 92.096,
+   "fi": 92.336,
+   "cru": "vulguem",
+   "punt": null
+  },
+  {
+   "text": "és",
+   "ini": 92.376,
+   "fi": 92.416,
+   "cru": "és",
+   "punt": null
+  },
+  {
+   "text": "justícia",
+   "ini": 92.536,
+   "fi": 92.896,
+   "cru": "justícia",
+   "punt": ","
+  },
+  {
+   "text": "eh",
+   "ini": 94.1,
+   "fi": 94.38,
+   "cru": "eh",
+   "punt": ","
+  },
+  {
+   "text": "siga",
+   "ini": 95.056,
+   "fi": 95.416,
+   "cru": "siga",
+   "punt": null
+  },
+  {
+   "text": "qui",
+   "ini": 95.496,
+   "fi": 95.616,
+   "cru": "qui",
+   "punt": null
+  },
+  {
+   "text": "siga",
+   "ini": 95.736,
+   "fi": 95.976,
+   "cru": "siga",
+   "punt": null
+  },
+  {
+   "text": "el",
+   "ini": 96.136,
+   "fi": 96.176,
+   "cru": "el",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 96.416,
+   "fi": 96.456,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "haja",
+   "ini": 96.576,
+   "fi": 96.776,
+   "cru": "haja",
+   "punt": null
+  },
+  {
+   "text": "comès",
+   "ini": 96.856,
+   "fi": 97.176,
+   "cru": "comès",
+   "punt": null
+  },
+  {
+   "text": "eixe",
+   "ini": 97.296,
+   "fi": 97.576,
+   "cru": "eixe",
+   "punt": null
+  },
+  {
+   "text": "assassinat",
+   "ini": 97.656,
+   "fi": 98.176,
+   "cru": "assassinat",
+   "punt": ","
+  },
+  {
+   "text": "eh",
+   "ini": 99.14,
+   "fi": 99.3,
+   "cru": "eh",
+   "punt": ","
+  },
+  {
+   "text": "no",
+   "ini": 99.456,
+   "fi": 99.496,
+   "cru": "no",
+   "punt": null
+  },
+  {
+   "text": "pot",
+   "ini": 99.656,
+   "fi": 99.776,
+   "cru": "pot",
+   "punt": null
+  },
+  {
+   "text": "quedar",
+   "ini": 99.856,
+   "fi": 100.096,
+   "cru": "quedar",
+   "punt": null
+  },
+  {
+   "text": "impune",
+   "ini": 100.216,
+   "fi": 100.656,
+   "cru": "impune",
+   "punt": "."
+  },
+  {
+   "text": "S'ha",
+   "ini": 100.936,
+   "fi": 101.216,
+   "cru": "s'ha",
+   "punt": null
+  },
+  {
+   "text": "d'investigar",
+   "ini": 101.296,
+   "fi": 101.976,
+   "cru": "d'investigar",
+   "punt": null
+  },
+  {
+   "text": "si",
+   "ini": 102.576,
+   "fi": 102.616,
+   "cru": "si",
+   "punt": null
+  },
+  {
+   "text": "Jorge",
+   "ini": 102.896,
+   "fi": 103.296,
+   "cru": "jorge",
+   "punt": null
+  },
+  {
+   "text": "no",
+   "ini": 103.376,
+   "fi": 103.416,
+   "cru": "no",
+   "punt": null
+  },
+  {
+   "text": "ha",
+   "ini": 103.496,
+   "fi": 103.536,
+   "cru": "ha",
+   "punt": null
+  },
+  {
+   "text": "sigut",
+   "ini": 103.656,
+   "fi": 104.016,
+   "cru": "sigut",
+   "punt": ","
+  },
+  {
+   "text": "si",
+   "ini": 104.704,
+   "fi": 104.744,
+   "cru": "si",
+   "punt": null
+  },
+  {
+   "text": "Jorge",
+   "ini": 104.984,
+   "fi": 105.304,
+   "cru": "jorge",
+   "punt": null
+  },
+  {
+   "text": "no",
+   "ini": 105.344,
+   "fi": 105.384,
+   "cru": "no",
+   "punt": null
+  },
+  {
+   "text": "ha",
+   "ini": 105.464,
+   "fi": 105.504,
+   "cru": "ha",
+   "punt": null
+  },
+  {
+   "text": "sigut",
+   "ini": 105.624,
+   "fi": 105.984,
+   "cru": "sigut",
+   "punt": ","
+  },
+  {
+   "text": "aleshores",
+   "ini": 106.504,
+   "fi": 106.984,
+   "cru": "aleshores",
+   "punt": null
+  },
+  {
+   "text": "qui",
+   "ini": 107.024,
+   "fi": 107.184,
+   "cru": "qui",
+   "punt": null
+  },
+  {
+   "text": "ha",
+   "ini": 107.224,
+   "fi": 107.264,
+   "cru": "ha",
+   "punt": null
+  },
+  {
+   "text": "sigut",
+   "ini": 107.344,
+   "fi": 107.664,
+   "cru": "sigut",
+   "punt": "."
+  },
+  {
+   "text": "Què",
+   "ini": 108.264,
+   "fi": 108.504,
+   "cru": "què",
+   "punt": null
+  },
+  {
+   "text": "ha",
+   "ini": 108.544,
+   "fi": 108.584,
+   "cru": "ha",
+   "punt": null
+  },
+  {
+   "text": "passat",
+   "ini": 108.664,
+   "fi": 108.824,
+   "cru": "passat",
+   "punt": null
+  },
+  {
+   "text": "amb",
+   "ini": 108.904,
+   "fi": 108.944,
+   "cru": "amb",
+   "punt": null
+  },
+  {
+   "text": "la",
+   "ini": 109.024,
+   "fi": 109.064,
+   "cru": "la",
+   "punt": null
+  },
+  {
+   "text": "mort",
+   "ini": 109.144,
+   "fi": 109.264,
+   "cru": "mort",
+   "punt": null
+  },
+  {
+   "text": "de",
+   "ini": 109.304,
+   "fi": 109.344,
+   "cru": "de",
+   "punt": null
+  },
+  {
+   "text": "la",
+   "ini": 109.384,
+   "fi": 109.424,
+   "cru": "la",
+   "punt": null
+  },
+  {
+   "text": "meua",
+   "ini": 109.464,
+   "fi": 109.664,
+   "cru": "meua",
+   "punt": null
+  },
+  {
+   "text": "germana",
+   "ini": 109.704,
+   "fi": 110.104,
+   "cru": "germana",
+   "punt": "?"
+  },
+  {
+   "text": "N'hi",
+   "ini": 111.144,
+   "fi": 111.344,
+   "cru": "n'hi",
+   "punt": null
+  },
+  {
+   "text": "ha",
+   "ini": 111.344,
+   "fi": 111.384,
+   "cru": "ha",
+   "punt": null
+  },
+  {
+   "text": "un",
+   "ini": 111.424,
+   "fi": 111.464,
+   "cru": "un",
+   "punt": null
+  },
+  {
+   "text": "menor",
+   "ini": 111.544,
+   "fi": 111.704,
+   "cru": "menor",
+   "punt": ","
+  },
+  {
+   "text": "que",
+   "ini": 111.784,
+   "fi": 111.824,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "n'hi",
+   "ini": 111.904,
+   "fi": 111.984,
+   "cru": "n'hi",
+   "punt": null
+  },
+  {
+   "text": "ha",
+   "ini": 112.024,
+   "fi": 112.064,
+   "cru": "ha",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 112.104,
+   "fi": 112.144,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "protegir",
+   "ini": 112.224,
+   "fi": 112.624,
+   "cru": "protegir",
+   "punt": "."
+  },
+  {
+   "text": "Eixa",
+   "ini": 113.584,
+   "fi": 113.904,
+   "cru": "eixa",
+   "punt": null
+  },
+  {
+   "text": "ha",
+   "ini": 113.984,
+   "fi": 114.024,
+   "cru": "ha",
+   "punt": null
+  },
+  {
+   "text": "sigut",
+   "ini": 114.064,
+   "fi": 114.264,
+   "cru": "sigut",
+   "punt": null
+  },
+  {
+   "text": "la",
+   "ini": 114.344,
+   "fi": 114.384,
+   "cru": "la",
+   "punt": null
+  },
+  {
+   "text": "meua",
+   "ini": 114.424,
+   "fi": 114.624,
+   "cru": "meua",
+   "punt": null
+  },
+  {
+   "text": "missió",
+   "ini": 114.664,
+   "fi": 114.944,
+   "cru": "missió",
+   "punt": null
+  },
+  {
+   "text": "durant",
+   "ini": 115.144,
+   "fi": 115.504,
+   "cru": "durant",
+   "punt": null
+  },
+  {
+   "text": "nou",
+   "ini": 115.904,
+   "fi": 116.144,
+   "cru": "nou",
+   "punt": null
+  },
+  {
+   "text": "anys",
+   "ini": 116.264,
+   "fi": 116.504,
+   "cru": "anys",
+   "punt": null
+  },
+  {
+   "text": "i",
+   "ini": 116.944,
+   "fi": 116.984,
+   "cru": "i",
+   "punt": null
+  },
+  {
+   "text": "vau",
+   "ini": 117.224,
+   "fi": 117.424,
+   "cru": "vau",
+   "punt": null
+  },
+  {
+   "text": "continuar",
+   "ini": 117.464,
+   "fi": 117.784,
+   "cru": "continuar",
+   "punt": null
+  },
+  {
+   "text": "sent",
+   "ini": 117.904,
+   "fi": 118.024,
+   "cru": "sent",
+   "punt": null
+  },
+  {
+   "text": "la",
+   "ini": 118.184,
+   "fi": 118.224,
+   "cru": "la",
+   "punt": null
+  },
+  {
+   "text": "meua",
+   "ini": 118.264,
+   "fi": 118.424,
+   "cru": "meua",
+   "punt": null
+  },
+  {
+   "text": "missió",
+   "ini": 118.464,
+   "fi": 118.744,
+   "cru": "missió",
+   "punt": ","
+  },
+  {
+   "text": "i",
+   "ini": 120.064,
+   "fi": 120.104,
+   "cru": "i",
+   "punt": null
+  },
+  {
+   "text": "Y",
+   "ini": 120.26,
+   "fi": 120.3,
+   "cru": "y",
+   "punt": null
+  },
+  {
+   "text": "i",
+   "ini": 121.064,
+   "fi": 121.104,
+   "cru": "i",
+   "punt": null
+  },
+  {
+   "text": "per",
+   "ini": 121.584,
+   "fi": 121.624,
+   "cru": "per",
+   "punt": null
+  },
+  {
+   "text": "a",
+   "ini": 121.744,
+   "fi": 121.784,
+   "cru": "a",
+   "punt": null
+  },
+  {
+   "text": "la",
+   "ini": 121.824,
+   "fi": 121.864,
+   "cru": "la",
+   "punt": null
+  },
+  {
+   "text": "meua",
+   "ini": 121.904,
+   "fi": 122.024,
+   "cru": "meua",
+   "punt": null
+  },
+  {
+   "text": "germana",
+   "ini": 122.064,
+   "fi": 122.264,
+   "cru": "germana",
+   "punt": null
+  },
+  {
+   "text": "demano",
+   "ini": 122.384,
+   "fi": 122.584,
+   "cru": "demano",
+   "punt": null
+  },
+  {
+   "text": "justícia",
+   "ini": 122.704,
+   "fi": 122.984,
+   "cru": "justícia",
+   "punt": ","
+  },
+  {
+   "text": "siga",
+   "ini": 123.184,
+   "fi": 123.384,
+   "cru": "siga",
+   "punt": null
+  },
+  {
+   "text": "la",
+   "ini": 123.424,
+   "fi": 123.464,
+   "cru": "la",
+   "punt": null
+  },
+  {
+   "text": "que",
+   "ini": 123.544,
+   "fi": 123.584,
+   "cru": "que",
+   "punt": null
+  },
+  {
+   "text": "siga",
+   "ini": 123.704,
+   "fi": 123.944,
+   "cru": "siga",
+   "punt": "."
+  }
+ ],
+ "trossos": [
+  {
+   "ini": 0.0,
+   "fi": 5.888,
+   "forcat": false,
+   "propi": [
+    0.0,
+    5.888
+   ],
+   "ids": [
+    30,
+    190,
+    18,
+    193,
+    5,
+    3,
+    122,
+    131,
+    34,
+    19,
+    5,
+    27,
+    188,
+    12,
+    20,
+    76,
+    200,
+    19,
+    143,
+    64,
+    31,
+    27,
+    36,
+    77,
+    56,
+    33,
+    3,
+    27,
+    37,
+    197,
+    49,
+    8,
+    4,
+    186,
+    10,
+    184,
+    183
+   ],
+   "trames": [
+    7,
+    11,
+    13,
+    16,
+    20,
+    27,
+    31,
+    35,
+    40,
+    42,
+    45,
+    48,
+    50,
+    51,
+    54,
+    56,
+    58,
+    60,
+    61,
+    64,
+    68,
+    72,
+    74,
+    77,
+    82,
+    93,
+    107,
+    109,
+    111,
+    113,
+    115,
+    117,
+    120,
+    122,
+    123,
+    126,
+    129
+   ],
+   "rescat": [],
+   "temps": {
+    "encoder": 0.6675192000111565,
+    "decoder": 0.15857189998496324
+   }
+  },
+  {
+   "ini": 5.888,
+   "fi": 29.152,
+   "forcat": false,
+   "propi": [
+    5.888,
+    29.152
+   ],
+   "ids": [
+    28,
+    17,
+    32,
+    190,
+    55,
+    11,
+    205,
+    31,
+    124,
+    56,
+    44,
+    184,
+    18,
+    45,
+    5,
+    63,
+    3,
+    29,
+    205,
+    193,
+    42,
+    194,
+    5,
+    30,
+    26,
+    9,
+    40,
+    25,
+    54,
+    4,
+    192,
+    77,
+    56,
+    30,
+    190,
+    10,
+    191,
+    23,
+    63,
+    87,
+    185,
+    142,
+    67,
+    5,
+    99,
+    195,
+    186,
+    49,
+    30,
+    193,
+    14,
+    183,
+    54,
+    27,
+    36,
+    77,
+    56,
+    20,
+    163,
+    43,
+    192,
+    64,
+    3,
+    20,
+    28,
+    17,
+    138,
+    15,
+    209,
+    44,
+    4,
+    129,
+    7,
+    6,
+    84,
+    198,
+    91,
+    44,
+    6,
+    188,
+    15,
+    10,
+    203,
+    184,
+    25,
+    11,
+    98,
+    7,
+    2,
+    201,
+    4,
+    192,
+    5,
+    6,
+    188,
+    31,
+    67,
+    192,
+    2,
+    81,
+    183,
+    2,
+    81,
+    183,
+    163,
+    43,
+    192,
+    64,
+    2,
+    201,
+    3,
+    67,
+    5,
+    1,
+    207,
+    183,
+    197,
+    192,
+    187,
+    28,
+    187,
+    87,
+    185,
+    11,
+    43,
+    184,
+    11,
+    98,
+    56
+   ],
+   "trames": [
+    35,
+    38,
+    40,
+    43,
+    44,
+    46,
+    48,
+    50,
+    53,
+    55,
+    58,
+    61,
+    62,
+    66,
+    68,
+    82,
+    87,
+    90,
+    92,
+    94,
+    96,
+    98,
+    100,
+    113,
+    120,
+    125,
+    127,
+    137,
+    145,
+    153,
+    155,
+    157,
+    160,
+    168,
+    171,
+    173,
+    176,
+    176,
+    181,
+    189,
+    193,
+    194,
+    199,
+    202,
+    207,
+    211,
+    213,
+    214,
+    236,
+    241,
+    244,
+    247,
+    254,
+    258,
+    260,
+    262,
+    264,
+    267,
+    275,
+    279,
+    282,
+    284,
+    289,
+    294,
+    297,
+    298,
+    301,
+    305,
+    308,
+    317,
+    326,
+    328,
+    330,
+    335,
+    337,
+    339,
+    341,
+    346,
+    349,
+    351,
+    353,
+    354,
+    356,
+    357,
+    360,
+    365,
+    366,
+    369,
+    377,
+    381,
+    404,
+    407,
+    408,
+    412,
+    413,
+    415,
+    419,
+    422,
+    427,
+    428,
+    431,
+    436,
+    440,
+    442,
+    446,
+    450,
+    453,
+    456,
+    473,
+    480,
+    497,
+    502,
+    506,
+    509,
+    510,
+    511,
+    513,
+    514,
+    517,
+    542,
+    545,
+    546,
+    546,
+    547,
+    549,
+    549,
+    557,
+    559,
+    562
+   ],
+   "rescat": [
+    {
+     "forat": [
+      5.89,
+      7.29
+     ],
+     "penal": 2.0,
+     "abast": "tros"
+    },
+    {
+     "forat": [
+      14.53,
+      15.37
+     ],
+     "penal": 2.0,
+     "abast": "tros"
+    },
+    {
+     "forat": [
+      20.69,
+      22.37
+     ],
+     "penal": 2.0,
+     "abast": "tros"
+    },
+    {
+     "forat": [
+      24.17,
+      25.85
+     ],
+     "penal": 2.0,
+     "abast": "tros"
+    },
+    {
+     "forat": [
+      26.61,
+      27.57
+     ],
+     "penal": 2.0,
+     "abast": "tros"
+    },
+    {
+     "forat": [
+      5.89,
+      7.29
+     ],
+     "penal": 2.0,
+     "abast": "finestra",
+     "marge": 3.0,
+     "paraules": 1
+    },
+    {
+     "forat": [
+      14.53,
+      15.37
+     ],
+     "penal": null,
+     "abast": "finestra",
+     "marge": null,
+     "paraules": 0
+    },
+    {
+     "forat": [
+      20.69,
+      22.09
+     ],
+     "penal": 2.0,
+     "abast": "finestra",
+     "marge": 2.0,
+     "paraules": 1
+    },
+    {
+     "forat": [
+      24.17,
+      25.77
+     ],
+     "penal": 2.0,
+     "abast": "finestra",
+     "marge": 2.0,
+     "paraules": 1
+    },
+    {
+     "forat": [
+      26.61,
+      27.57
+     ],
+     "penal": 2.0,
+     "abast": "finestra",
+     "marge": 1.0,
+     "paraules": 1
+    },
+    {
+     "forat": [
+      14.53,
+      15.37
+     ],
+     "penal": 3.0,
+     "abast": "forat"
+    },
+    {
+     "forat": [
+      20.93,
+      22.09
+     ],
+     "penal": 3.0,
+     "abast": "forat"
+    },
+    {
+     "forat": [
+      24.89,
+      25.77
+     ],
+     "penal": 3.0,
+     "abast": "forat"
+    },
+    {
+     "forat": [
+      14.49,
+      15.37
+     ],
+     "penal": 4.0,
+     "abast": "forat"
+    },
+    {
+     "forat": [
+      20.93,
+      22.05
+     ],
+     "penal": 4.0,
+     "abast": "forat"
+    },
+    {
+     "forat": [
+      24.89,
+      25.77
+     ],
+     "penal": 4.0,
+     "abast": "forat"
+    }
+   ],
+   "temps": {
+    "encoder": 3.0669575000647455,
+    "decoder": 23.122942499932833
+   }
+  },
+  {
+   "ini": 29.152,
+   "fi": 32.288,
+   "forcat": false,
+   "propi": [
+    29.152,
+    32.288
+   ],
+   "ids": [
+    21,
+    162,
+    33,
+    26,
+    28,
+    161,
+    23,
+    3,
+    184,
+    5,
+    19,
+    29,
+    60,
+    42,
+    194,
+    32
+   ],
+   "trames": [
+    2,
+    7,
+    12,
+    18,
+    25,
+    27,
+    33,
+    39,
+    42,
+    44,
+    48,
+    52,
+    54,
+    58,
+    61,
+    64
+   ],
+   "rescat": [],
+   "temps": {
+    "encoder": 0.7888731000712141,
+    "decoder": 0.10841500002425164
+   }
+  },
+  {
+   "ini": 32.288,
+   "fi": 57.184,
+   "forcat": false,
+   "propi": [
+    32.288,
+    57.184
+   ],
+   "ids": [
+    44,
+    13,
+    211,
+    28,
+    17,
+    32,
+    190,
+    55,
+    27,
+    36,
+    77,
+    56,
+    26,
+    28,
+    161,
+    23,
+    1,
+    23,
+    190,
+    30,
+    15,
+    211,
+    208,
+    60,
+    3,
+    27,
+    36,
+    191,
+    23,
+    73,
+    44,
+    184,
+    18,
+    183,
+    31,
+    31,
+    30,
+    184,
+    65,
+    195,
+    55,
+    38,
+    182,
+    39,
+    3,
+    184,
+    184,
+    5,
+    184,
+    19,
+    6,
+    178,
+    32,
+    30,
+    190,
+    18,
+    193,
+    5,
+    33,
+    42,
+    193,
+    27,
+    105,
+    112,
+    3,
+    35,
+    46,
+    193,
+    32,
+    71,
+    33,
+    42,
+    193,
+    27,
+    105,
+    112,
+    3,
+    1,
+    23,
+    142,
+    34,
+    192,
+    194,
+    16,
+    184,
+    33,
+    42,
+    193,
+    27,
+    105,
+    112,
+    50,
+    170,
+    104,
+    51,
+    172,
+    16,
+    203,
+    43,
+    33,
+    42,
+    193,
+    27,
+    105,
+    112,
+    3,
+    201,
+    3,
+    6,
+    207,
+    40,
+    184,
+    5,
+    184,
+    19,
+    144,
+    82,
+    133,
+    205,
+    191,
+    60,
+    8,
+    8,
+    29,
+    205,
+    193,
+    42,
+    194,
+    5,
+    8,
+    8,
+    87,
+    143,
+    104,
+    187,
+    195,
+    40
+   ],
+   "trames": [
+    6,
+    10,
+    12,
+    17,
+    19,
+    21,
+    24,
+    24,
+    27,
+    29,
+    30,
+    33,
+    37,
+    42,
+    44,
+    48,
+    51,
+    53,
+    55,
+    57,
+    61,
+    63,
+    65,
+    68,
+    72,
+    76,
+    78,
+    79,
+    80,
+    83,
+    87,
+    90,
+    92,
+    94,
+    98,
+    103,
+    108,
+    111,
+    114,
+    116,
+    118,
+    121,
+    126,
+    128,
+    131,
+    133,
+    133,
+    135,
+    136,
+    137,
+    141,
+    144,
+    147,
+    170,
+    175,
+    177,
+    180,
+    181,
+    187,
+    192,
+    196,
+    219,
+    223,
+    228,
+    235,
+    243,
+    246,
+    249,
+    251,
+    255,
+    277,
+    283,
+    285,
+    288,
+    291,
+    296,
+    310,
+    317,
+    319,
+    322,
+    325,
+    326,
+    328,
+    330,
+    334,
+    351,
+    357,
+    360,
+    363,
+    367,
+    373,
+    392,
+    401,
+    406,
+    410,
+    414,
+    418,
+    421,
+    424,
+    441,
+    447,
+    449,
+    453,
+    456,
+    462,
+    477,
+    485,
+    506,
+    510,
+    511,
+    513,
+    515,
+    516,
+    518,
+    519,
+    523,
+    531,
+    533,
+    536,
+    538,
+    540,
+    543,
+    549,
+    556,
+    558,
+    561,
+    562,
+    565,
+    567,
+    571,
+    576,
+    584,
+    589,
+    592,
+    597,
+    600,
+    603
+   ],
+   "rescat": [
+    {
+     "forat": [
+      40.17,
+      41.05
+     ],
+     "penal": 2.0,
+     "abast": "tros"
+    },
+    {
+     "forat": [
+      42.61,
+      43.45
+     ],
+     "penal": 2.0,
+     "abast": "tros"
+    },
+    {
+     "forat": [
+      47.29,
+      48.13
+     ],
+     "penal": 2.0,
+     "abast": "tros"
+    },
+    {
+     "forat": [
+      49.29,
+      50.01
+     ],
+     "penal": 2.0,
+     "abast": "tros"
+    },
+    {
+     "forat": [
+      50.85,
+      52.61
+     ],
+     "penal": 2.0,
+     "abast": "tros"
+    },
+    {
+     "forat": [
+      40.17,
+      41.05
+     ],
+     "penal": 2.0,
+     "abast": "finestra",
+     "marge": 1.0,
+     "paraules": 1
+    },
+    {
+     "forat": [
+      42.57,
+      43.41
+     ],
+     "penal": null,
+     "abast": "finestra",
+     "marge": null,
+     "paraules": 0
+    },
+    {
+     "forat": [
+      47.25,
+      48.01
+     ],
+     "penal": null,
+     "abast": "finestra",
+     "marge": null,
+     "paraules": 0
+    },
+    {
+     "forat": [
+      51.53,
+      52.45
+     ],
+     "penal": 2.0,
+     "abast": "finestra",
+     "marge": 3.0,
+     "paraules": 1
+    },
+    {
+     "forat": [
+      42.57,
+      43.41
+     ],
+     "penal": 3.0,
+     "abast": "forat"
+    },
+    {
+     "forat": [
+      47.25,
+      48.01
+     ],
+     "penal": 3.0,
+     "abast": "forat"
+    },
+    {
+     "forat": [
+      42.53,
+      43.41
+     ],
+     "penal": 4.0,
+     "abast": "forat"
+    },
+    {
+     "forat": [
+      47.25,
+      47.97
+     ],
+     "penal": 4.0,
+     "abast": "forat"
+    },
+    {
+     "forat": [
+      50.81,
+      51.53
+     ],
+     "penal": 4.0,
+     "abast": "forat"
+    }
+   ],
+   "temps": {
+    "encoder": 3.9971226999768987,
+    "decoder": 16.52465709997341
+   }
+  },
+  {
+   "ini": 57.184,
+   "fi": 81.936,
+   "forcat": false,
+   "propi": [
+    57.184,
+    81.936
+   ],
+   "ids": [
+    53,
+    192,
+    10,
+    188,
+    4,
+    192,
+    5,
+    78,
+    27,
+    19,
+    185,
+    14,
+    80,
+    182,
+    81,
+    31,
+    31,
+    31,
+    31,
+    31,
+    33,
+    72,
+    9,
+    40,
+    47,
+    121,
+    23,
+    27,
+    36,
+    198,
+    69,
+    31,
+    31,
+    154,
+    192,
+    187,
+    132,
+    44,
+    50,
+    198,
+    188,
+    99,
+    198,
+    37,
+    22,
+    45,
+    144,
+    29,
+    104,
+    189,
+    67,
+    186,
+    82,
+    188,
+    52,
+    200,
+    187,
+    188,
+    30,
+    20,
+    82,
+    74,
+    190,
+    205,
+    125,
+    152,
+    208,
+    60,
+    16,
+    183,
+    82,
+    188,
+    6,
+    188,
+    31,
+    54,
+    29,
+    104,
+    189,
+    31,
+    26,
+    9,
+    40,
+    8,
+    20,
+    152,
+    192,
+    183,
+    57,
+    7,
+    194,
+    16,
+    183,
+    31,
+    146,
+    171,
+    208,
+    187,
+    197,
+    51,
+    30,
+    30,
+    39,
+    113,
+    81,
+    202,
+    180,
+    191,
+    48,
+    183,
+    3,
+    195,
+    84,
+    198,
+    14,
+    3,
+    20,
+    29,
+    7,
+    164,
+    180,
+    191,
+    48,
+    183,
+    31,
+    33,
+    35,
+    116,
+    82,
+    74,
+    190,
+    205,
+    125,
+    123,
+    205,
+    20,
+    29,
+    205,
+    193,
+    42,
+    143,
+    78,
+    20,
+    152,
+    192,
+    183,
+    57,
+    7,
+    194,
+    16,
+    183,
+    20,
+    31,
+    20,
+    31,
+    11,
+    207,
+    201,
+    183,
+    31,
+    191,
+    51,
+    11,
+    10,
+    155,
+    29,
+    70,
+    183,
+    78,
+    26,
+    85
+   ],
+   "trames": [
+    4,
+    6,
+    7,
+    9,
+    10,
+    13,
+    13,
+    16,
+    21,
+    24,
+    27,
+    29,
+    38,
+    41,
+    44,
+    47,
+    51,
+    60,
+    60,
+    61,
+    67,
+    70,
+    74,
+    76,
+    80,
+    82,
+    84,
+    87,
+    89,
+    91,
+    94,
+    99,
+    112,
+    120,
+    122,
+    124,
+    126,
+    130,
+    135,
+    139,
+    139,
+    153,
+    159,
+    160,
+    162,
+    166,
+    169,
+    176,
+    179,
+    180,
+    182,
+    185,
+    205,
+    210,
+    213,
+    217,
+    218,
+    220,
+    222,
+    224,
+    226,
+    228,
+    230,
+    231,
+    232,
+    236,
+    240,
+    243,
+    247,
+    251,
+    259,
+    263,
+    265,
+    267,
+    269,
+    271,
+    273,
+    274,
+    275,
+    277,
+    279,
+    281,
+    282,
+    284,
+    287,
+    289,
+    290,
+    292,
+    293,
+    295,
+    297,
+    298,
+    299,
+    302,
+    304,
+    307,
+    309,
+    311,
+    312,
+    314,
+    317,
+    323,
+    330,
+    333,
+    337,
+    342,
+    370,
+    374,
+    376,
+    378,
+    379,
+    381,
+    382,
+    384,
+    385,
+    388,
+    390,
+    392,
+    394,
+    396,
+    404,
+    407,
+    409,
+    410,
+    412,
+    414,
+    416,
+    417,
+    423,
+    425,
+    427,
+    430,
+    432,
+    442,
+    450,
+    469,
+    475,
+    477,
+    479,
+    481,
+    484,
+    501,
+    507,
+    510,
+    511,
+    513,
+    515,
+    517,
+    520,
+    521,
+    524,
+    535,
+    542,
+    558,
+    564,
+    566,
+    568,
+    569,
+    569,
+    571,
+    573,
+    574,
+    577,
+    579,
+    580,
+    584,
+    586,
+    588,
+    591,
+    597,
+    602
+   ],
+   "rescat": [
+    {
+     "forat": [
+      61.22,
+      61.98
+     ],
+     "penal": 2.0,
+     "abast": "tros"
+    }
+   ],
+   "temps": {
+    "encoder": 3.468431399902329,
+    "decoder": 1.6917327000992373
+   }
+  },
+  {
+   "ini": 81.936,
+   "fi": 104.544,
+   "forcat": false,
+   "propi": [
+    81.936,
+    104.544
+   ],
+   "ids": [
+    25,
+    34,
+    56,
+    8,
+    154,
+    192,
+    187,
+    132,
+    44,
+    26,
+    85,
+    44,
+    3,
+    31,
+    33,
+    35,
+    183,
+    218,
+    183,
+    82,
+    74,
+    190,
+    205,
+    125,
+    1,
+    207,
+    24,
+    183,
+    15,
+    16,
+    116,
+    75,
+    50,
+    138,
+    31,
+    82,
+    183,
+    27,
+    182,
+    1,
+    60,
+    31,
+    28,
+    17,
+    32,
+    190,
+    55,
+    63,
+    3,
+    35,
+    69,
+    205,
+    189,
+    71,
+    6,
+    188,
+    31,
+    29,
+    104,
+    77,
+    56,
+    78,
+    82,
+    74,
+    190,
+    205,
+    125,
+    115,
+    198,
+    183,
+    21,
+    187,
+    115,
+    198,
+    183,
+    26,
+    31,
+    68,
+    206,
+    183,
+    63,
+    211,
+    184,
+    2,
+    81,
+    182,
+    3,
+    184,
+    184,
+    40,
+    184,
+    36,
+    51,
+    54,
+    4,
+    96,
+    31,
+    191,
+    14,
+    25,
+    121,
+    24,
+    182,
+    11,
+    207,
+    201,
+    183,
+    1,
+    207,
+    36,
+    197,
+    5,
+    42,
+    198,
+    14,
+    115,
+    82,
+    19,
+    198,
+    182,
+    54,
+    68,
+    115,
+    77,
+    190
+   ],
+   "trames": [
+    7,
+    15,
+    17,
+    21,
+    25,
+    28,
+    30,
+    33,
+    52,
+    61,
+    66,
+    76,
+    82,
+    84,
+    86,
+    89,
+    90,
+    93,
+    94,
+    97,
+    99,
+    102,
+    104,
+    106,
+    120,
+    124,
+    127,
+    128,
+    131,
+    132,
+    134,
+    136,
+    141,
+    144,
+    161,
+    171,
+    175,
+    177,
+    179,
+    181,
+    183,
+    187,
+    195,
+    199,
+    203,
+    206,
+    207,
+    212,
+    215,
+    219,
+    220,
+    223,
+    226,
+    228,
+    246,
+    249,
+    251,
+    254,
+    255,
+    257,
+    259,
+    261,
+    265,
+    266,
+    269,
+    271,
+    273,
+    328,
+    334,
+    336,
+    339,
+    341,
+    345,
+    348,
+    350,
+    355,
+    362,
+    366,
+    368,
+    370,
+    373,
+    377,
+    380,
+    384,
+    388,
+    390,
+    393,
+    394,
+    395,
+    397,
+    400,
+    401,
+    405,
+    438,
+    443,
+    445,
+    448,
+    451,
+    453,
+    457,
+    459,
+    462,
+    467,
+    475,
+    479,
+    481,
+    481,
+    484,
+    484,
+    487,
+    490,
+    491,
+    494,
+    498,
+    500,
+    516,
+    524,
+    527,
+    530,
+    533,
+    536,
+    539,
+    543,
+    548,
+    551
+   ],
+   "rescat": [
+    {
+     "forat": [
+      92.9,
+      95.1
+     ],
+     "penal": 2.0,
+     "abast": "tros"
+    },
+    {
+     "forat": [
+      98.22,
+      99.5
+     ],
+     "penal": 2.0,
+     "abast": "tros"
+    },
+    {
+     "forat": [
+      92.9,
+      95.06
+     ],
+     "penal": 2.0,
+     "abast": "finestra",
+     "marge": 1.0,
+     "paraules": 1
+    },
+    {
+     "forat": [
+      98.18,
+      99.46
+     ],
+     "penal": 2.0,
+     "abast": "finestra",
+     "marge": 3.0,
+     "paraules": 1
+    }
+   ],
+   "temps": {
+    "encoder": 3.0769357999088243,
+    "decoder": 6.977427500067279
+   }
+  },
+  {
+   "ini": 104.544,
+   "fi": 124.764,
+   "forcat": false,
+   "propi": [
+    104.544,
+    124.764
+   ],
+   "ids": [
+    115,
+    82,
+    19,
+    198,
+    182,
+    54,
+    68,
+    115,
+    77,
+    190,
+    50,
+    5,
+    201,
+    19,
+    5,
+    21,
+    187,
+    68,
+    115,
+    77,
+    190,
+    21,
+    211,
+    68,
+    4,
+    40,
+    184,
+    51,
+    103,
+    20,
+    15,
+    19,
+    190,
+    8,
+    20,
+    152,
+    192,
+    183,
+    57,
+    7,
+    194,
+    16,
+    183,
+    28,
+    207,
+    201,
+    187,
+    68,
+    39,
+    15,
+    10,
+    19,
+    31,
+    28,
+    207,
+    201,
+    187,
+    68,
+    31,
+    100,
+    72,
+    198,
+    91,
+    2,
+    81,
+    183,
+    68,
+    115,
+    77,
+    190,
+    20,
+    152,
+    192,
+    183,
+    15,
+    46,
+    134,
+    202,
+    1,
+    192,
+    101,
+    190,
+    54,
+    192,
+    88,
+    203,
+    184,
+    25,
+    95,
+    192,
+    52,
+    190,
+    36,
+    192,
+    14,
+    11,
+    38,
+    20,
+    152,
+    192,
+    183,
+    15,
+    46,
+    134,
+    202,
+    25,
+    25,
+    44,
+    3,
+    20,
+    152,
+    192,
+    183,
+    57,
+    7,
+    194,
+    16,
+    183,
+    8,
+    194,
+    16,
+    188,
+    82,
+    74,
+    190,
+    205,
+    125,
+    115,
+    198,
+    183,
+    20,
+    31,
+    115,
+    198,
+    183
+   ],
+   "trames": [
+    4,
+    11,
+    13,
+    16,
+    18,
+    20,
+    23,
+    27,
+    31,
+    35,
+    49,
+    54,
+    57,
+    57,
+    60,
+    62,
+    65,
+    67,
+    70,
+    74,
+    77,
+    93,
+    98,
+    100,
+    103,
+    104,
+    105,
+    106,
+    109,
+    112,
+    115,
+    116,
+    117,
+    119,
+    121,
+    123,
+    125,
+    127,
+    129,
+    131,
+    133,
+    135,
+    138,
+    165,
+    169,
+    169,
+    169,
+    170,
+    172,
+    175,
+    176,
+    178,
+    181,
+    184,
+    185,
+    185,
+    185,
+    187,
+    189,
+    192,
+    195,
+    198,
+    201,
+    226,
+    231,
+    233,
+    236,
+    238,
+    240,
+    242,
+    245,
+    247,
+    249,
+    251,
+    253,
+    255,
+    258,
+    259,
+    265,
+    266,
+    268,
+    273,
+    284,
+    289,
+    293,
+    297,
+    298,
+    310,
+    317,
+    321,
+    323,
+    325,
+    326,
+    328,
+    330,
+    334,
+    336,
+    341,
+    343,
+    344,
+    346,
+    348,
+    350,
+    353,
+    354,
+    388,
+    413,
+    426,
+    430,
+    432,
+    434,
+    435,
+    436,
+    438,
+    439,
+    441,
+    441,
+    442,
+    446,
+    447,
+    448,
+    450,
+    454,
+    455,
+    457,
+    459,
+    460,
+    466,
+    469,
+    470,
+    472,
+    475,
+    479,
+    482,
+    484
+   ],
+   "rescat": [
+    {
+     "forat": [
+      110.1,
+      111.22
+     ],
+     "penal": 2.0,
+     "abast": "tros"
+    },
+    {
+     "forat": [
+      120.3,
+      121.58
+     ],
+     "penal": 2.0,
+     "abast": "tros"
+    },
+    {
+     "forat": [
+      120.14,
+      121.22
+     ],
+     "penal": 0.0,
+     "abast": "finestra",
+     "marge": 1.0,
+     "paraules": 1
+    },
+    {
+     "forat": [
+      120.3,
+      121.22
+     ],
+     "penal": 3.0,
+     "abast": "forat"
+    },
+    {
+     "forat": [
+      120.3,
+      121.1
+     ],
+     "penal": 4.0,
+     "abast": "forat"
+    }
+   ],
+   "temps": {
+    "encoder": 2.6204472000245005,
+    "decoder": 6.217353000072762
+   }
+  }
+ ],
+ "temps": {
+  "vad": 0.854,
+  "puntuacio": 0.704,
+  "total": 74.054,
+  "encoder": 17.686,
+  "decoder": 54.801,
+  "rtf": 0.5844
+ },
+ "audio": "prova_raquel_apunt.mp4"
+}
