@@ -3,7 +3,7 @@
 """
 Àudio o vídeo -> subtítols, amb el motor de referència (sense NeMo ni PyTorch).
 
-Per a cada fitxer escriu a --eixida:
+Per a cada fitxer escriu a --eixida (per defecte resultats/, que git ignora):
   <nom>.json                 paraules amb inici/fi, signes i majúscules (la transcripció)
   <nom>.<perfil>[.<ressaltat>].srt / .vtt / .txt
 
@@ -43,7 +43,7 @@ def entrades(rutes) -> list[Path]:
 def main():
     ap = argparse.ArgumentParser(description="Àudio/vídeo (o JSON del motor) -> subtítols SRT/VTT/TXT")
     ap.add_argument("fitxers", nargs="+", help="Àudios, vídeos, JSON del motor o carpetes")
-    ap.add_argument("--eixida", default=".", help="Carpeta on s'escriuen els resultats")
+    ap.add_argument("--eixida", default=str(ARREL / "resultats"), help="Carpeta dels resultats (per defecte resultats/, fora de git)")
     ap.add_argument("--models", default=str(ARREL / "models_onnx"), help="Carpeta dels models ONNX")
     ap.add_argument("--reutilitza", action="store_true", help="Si <nom>.json ja existeix, no torna a transcriure")
     ap.add_argument("--fils", type=int, default=None, help="Fils de CPU")
