@@ -26,12 +26,6 @@ import unicodedata
 ELISIO = ("'", "’", "-")
 
 
-def uneix_elisions(text: str) -> str:
-    """El mateix sobre un text: "l' actor" -> "l'actor", "xerrar -ne" -> "xerrar-ne"."""
-    text = re.sub(r"(?<=\w)(['’-])\s+(?=\w)", r"\1", text)
-    return re.sub(r"(?<=\w)\s+(['’-])(?=\w)", r"\1", text)
-
-
 SOLES = {"l", "d", "m", "t", "s", "n"}
 ENCLITICS = {"l", "m", "t", "s", "n"}            # els que poden anar darrere ("se'n", "porta'l")
 NO_APOSTROFEN = {"a", "i", "o", "u", "e"}         # mai "l'a", "d'i"...
@@ -57,10 +51,6 @@ def agrupa_elisions(textos: list[str]) -> list[tuple[str, int, int]]:
         res.append((w, i, i))
         i += 1
     return res
-
-
-def repara_text(text: str) -> str:
-    return " ".join(t for t, _, _ in agrupa_elisions(text.split()))
 
 
 def neteja(w: str) -> str:

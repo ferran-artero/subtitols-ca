@@ -1,0 +1,6 @@
+# Per a generar els models ONNX (només cal una vegada). NeMo porta torch i transformers.
+-r ../requirements.txt
+nemo_toolkit[asr]
+onnx
+onnx_ir
+huggingface_hub

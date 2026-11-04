@@ -9,15 +9,15 @@ Detecció de veu (Silero VAD v5, ONNX) i tall en trossos per a l'ASR.
 2. Segments de veu: comença quan p >= llindar; acaba quan p < llindar - 0.15 durant
    `silenci_min` segons. Es descarten els de menys de `veu_min` i s'amplien `marge` per banda.
 3. Trossos per a l'ASR (com a molt `max_tros` segons): s'ajunten segments consecutius si el
-   silenci entre ells és curt; un segment massa llarg es talla pel punt de probabilitat més baixa.
+   silenci entre ells és curt; un segment massa llarg es talla pel punt de probabilitat més baixa
+   entre el 60 % i el 100 % de `max_tros` (tall forçat).
+4. Talls forçats: els dos trossos s'allarguen `solap` segons per damunt del tall, perquè l'ASR
+   senta sencera la paraula que hi haja just al tall. Cada tros té una zona "pròpia"
+   ([propi_ini, propi_fi)): el motor només es queda les paraules el centre de les quals cau dins
+   la seua zona pròpia, així cap paraula surt dues vegades.
 5. Context: cada tros s'allarga fins a `extensio` segons dins del silenci que l'envolta (sense
-   passar de la meitat del silenci fins al tros veí). El Conformer normalitza l'espectrograma
-   amb la mitjana del tros i està acostumat a tindre silenci al voltant de la veu: sense aquest
-   context, l'ASR empitjora clarament.
-4. Talls forçats (dins d'un segment de veu): els dos trossos s'allarguen `solap` segons per
-   damunt del tall, perquè l'ASR senta sencera la paraula que hi haja just al tall. Cada tros
-   té una zona "pròpia" ([propi_ini, propi_fi)): el motor només es queda les paraules el
-   centre de les quals cau dins la seua zona pròpia, així cap paraula surt dues vegades.
+   passar de la meitat del silenci fins al tros veí). Sense aquest context el Conformer
+   al·lucina.
 """
 from dataclasses import dataclass
 

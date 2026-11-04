@@ -1,29 +1,28 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 Ferran Artero Merino — vegeu NOTICE
 """
-FASE 1.1 — Exporta el Conformer (NeMo, RNNT) a ONNX i el quantitza a int8.
+Exporta el Conformer (NeMo, RNNT) a ONNX (float32). Després: quantitza.py.
 
 NeMo exporta els transductors en dues peces:
   encoder.onnx        espectrograma mel [1, 80, T]  ->  sortida de l'encoder [1, D, T/4]
   decoder_joint.onnx  (un instant de l'encoder, últim token, estats LSTM) -> logits + estats nous
-L'espectrograma mel NO va dins de l'ONNX: es calcula a part (a la fase 2 el reescriurem).
+L'espectrograma mel NO va dins de l'ONNX: el calcula motor_ref/mel.py.
 
 Escriu a models_onnx/conformer-ca-es/:
   encoder.onnx, decoder_joint.onnx            (float32)
-  encoder.int8.onnx, decoder_joint.int8.onnx  (pesos en int8)
   tokenizer.model, tokens.txt                 (vocabulari SentencePiece)
   config.json                                 (preprocessador, blank, durada de cada instant...)
-  mel_fb.npy, finestra.npy                    (banc de filtres i finestra, per a la fase 2)
+  mel_fb.npy, finestra.npy                    (banc de filtres i finestra de l'espectrograma)
 
 Ús (entorn venv-nemo, amb `pip install onnxruntime`):
-    python eines/onnx_exporta_conformer.py
-    python eines/onnx_exporta_conformer.py --model C:/models/el_meu.nemo --eixida models_onnx/el-meu
+    python eines/models/exporta_conformer.py
+    python eines/models/exporta_conformer.py --model C:/models/el_meu.nemo --eixida models_onnx/el-meu
 """
 import argparse
 import json
 from pathlib import Path
 
-ARREL = Path(__file__).resolve().parent.parent
+ARREL = Path(__file__).resolve().parents[2]          # arrel del repositori
 MODEL = "projecte-aina/stt_ca-es_conformer_transducer_large"
 
 
@@ -31,16 +30,8 @@ def mida_mb(p: Path) -> float:
     return p.stat().st_size / 2**20
 
 
-def quantitza(entrada: Path, eixida: Path) -> None:
-    """int8 dinàmic només a MatMul/Gemm: és on hi ha quasi tots els pesos i és el que
-    onnxruntime-web executa bé. Les convolucions i la LSTM es queden en float32."""
-    from onnxruntime.quantization import QuantType, quantize_dynamic
-    quantize_dynamic(str(entrada), str(eixida), weight_type=QuantType.QInt8,
-                     op_types_to_quantize=["MatMul", "Gemm"])
-
-
 def main():
-    ap = argparse.ArgumentParser(description="Exporta el Conformer RNNT a ONNX (float32 + int8)")
+    ap = argparse.ArgumentParser(description="Exporta el Conformer RNNT a ONNX (float32)")
     ap.add_argument("--model", default=MODEL, help="Id de Hugging Face o ruta a un .nemo")
     ap.add_argument("--eixida", default=str(ARREL / "models_onnx" / "conformer-ca-es"))
     ap.add_argument("--opset", type=int, default=17)
@@ -88,7 +79,7 @@ def main():
     except Exception as e:
         print(f"  [avís] No he pogut desar tokenizer.model ({e}); tens tokens.txt igualment.")
 
-    # ---- 3. Configuració i preprocessador (per a la fase 2)
+    # ---- 3. Configuració i preprocessador 
     pre = OmegaConf.to_container(m.cfg.preprocessor, resolve=True)
     sub_factor = int(m.cfg.encoder.get("subsampling_factor", 4))
     stride = float(pre.get("window_stride", 0.01))
@@ -112,15 +103,9 @@ def main():
         np.save(out / "mel_fb.npy", feat.fb.squeeze(0).cpu().numpy().astype(np.float32))
         np.save(out / "finestra.npy", feat.window.cpu().numpy().astype(np.float32))
     except Exception as e:
-        print(f"  [avís] No he pogut desar el banc de filtres ({e}). Ho farem a la fase 2.")
+        print(f"  [avís] No he pogut desar el banc de filtres ({e})..")
 
-    # ---- 4. Quantització int8
-    print("Quantitzant a int8 ...")
-    for sub in ("encoder", "decoder_joint"):
-        quantitza(out / f"{sub}.onnx", out / f"{sub}.int8.onnx")
-        print(f"  {sub}.int8.onnx: {mida_mb(out / f'{sub}.int8.onnx'):.0f} MB")
-
-    # ---- 5. Comprovació ràpida: el blank ha de ser l'últim logit
+    # ---- 4. Comprovació ràpida: el blank ha de ser l'últim logit
     import onnxruntime as ort
     dec = ort.InferenceSession(str(out / "decoder_joint.onnx"), providers=["CPUExecutionProvider"])
     print("\nEntrades del decoder_joint:", [(i.name, i.shape, i.type) for i in dec.get_inputs()])
@@ -128,9 +113,7 @@ def main():
     enc = ort.InferenceSession(str(out / "encoder.onnx"), providers=["CPUExecutionProvider"])
     print("Entrades de l'encoder:", [(i.name, i.shape, i.type) for i in enc.get_inputs()])
     print(f"\nFet. Vocabulari {V} + blank (id {V}). Cada instant de l'encoder = {cfg['segons_per_instant']:.3f} s")
-    total = sum(mida_mb(p) for p in out.glob("*.int8.onnx"))
-    print(f"Mida int8 (encoder + decoder_joint): {total:.0f} MB")
-    print("Següent: python eines/onnx_exporta_puntuadors.py")
+    print("Següent: python eines/models/exporta_puntuadors.py")
 
 
 if __name__ == "__main__":
