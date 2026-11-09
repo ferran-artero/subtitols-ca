@@ -189,6 +189,13 @@ $("#f-json").addEventListener("change", async (e) => {
   }
 });
 
+// transcripció feta al navegador (transcriu.js)
+document.addEventListener("transcripcio", (e) => {
+  paraules = e.detail.paraules;
+  nomBase = e.detail.nom;
+  recalcula();
+});
+
 document.querySelectorAll("[data-baixa]").forEach((b) => b.addEventListener("click", () => {
   if (!paraules) return;
   const fmt = b.dataset.baixa;

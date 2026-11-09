@@ -1,6 +1,6 @@
 # Subtitulador català al navegador — història, decisions i passos pendents
 
-*Ferran Artero Merino · beca ValgrAI (VRAIN-UPV) · estat a 4 de novembre de 2026*
+*Ferran Artero Merino · beca ValgrAI (VRAIN-UPV) · estat a 9 de novembre de 2026*
 
 Aquest document explica tot el procés fins ara: quin problema volem resoldre, què hem fet, quins
 problemes hem trobat, com els hem resolt, per què hem pres cada decisió i què queda per fer.
@@ -132,7 +132,7 @@ Abans de les respostes vam preparar un pla B: entrenar el nostre propi puntuador
 | 0 | Repositori, GitHub Pages, llicència, estructura | ✅ |
 | 1 | Convertir els models a ONNX i comprovar que no perden qualitat | ✅ |
 | 2 | Motor de referència en Python (només numpy + onnxruntime) | ✅ |
-| 3 | Motor en JavaScript al navegador + decisió de viabilitat | 🔶 motor fet i validat; falta la pàgina del navegador |
+| 3 | Motor en JavaScript al navegador + decisió de viabilitat | ✅ al PC; falta provar-lo al mòbil (després de la 4) |
 | 4 | Publicar els models a Hugging Face | pendent |
 | 5 | Segmentació i format dels subtítols | ✅ (feta abans de la 3) |
 | 6 | Interfície web | pendent |
@@ -511,19 +511,72 @@ Com recuperar-ho, per ordre: WASM amb diversos fils al navegador (cal el *servic
 COOP/COEP); WebGPU per a l'encoder; abaratir l'etapa 2 del rescat. Tot s'ha de mesurar ja al
 navegador i al PC de l'usuari, no a Node.
 
+### 10.5 Optimització i pàgina del navegador (9 de novembre)
+
+Abans de la interfície vam optimitzar el motor i vam fer la pàgina que l'executa. Com sempre,
+primer a ASR-CAT (banc de proves `codi/js/bench.mjs` a Node i `codi/js/bench.html` al navegador,
+que comparen cada àudio amb Python i mesuren cada etapa) i després al repositori.
+
+**Optimitzacions exactes** (el resultat continua idèntic a Python, 41/41):
+- El bucle del decoder ja no copia res: l'eixida de l'encoder es transposa una vegada i es
+  reutilitzen els tensors. Guany petit: quasi tot el cost és dins d'onnxruntime (≈ 1,4 ms/crida).
+- L'etapa 3 del rescat continua des de la primera trama que canvia, en compte de tornar a
+  començar el tros: la descodificació *greedy* només depén del que ve abans. Als vídeos amb
+  música, un 7–10 % menys de crides al decoder.
+
+**On s'executa l'encoder** (85–90 % del temps), mesurat al Chrome del PC de l'usuari (8 nuclis):
+
+| | 38 clips (RTF) | Daniel (RTF) | Idèntic a Python |
+|---|---|---|---|
+| WASM, 1 fil | 0,39 | 0,52 | sí |
+| **WASM, 8 fils** | **0,18–0,23** | **0,24–0,32** | **sí (41/41)** |
+| WebGPU (gràfica integrada), encoder q8w | 0,22 | 0,38 | sí |
+| *Python natiu, 2 fils* | *0,18* | *0,22* | – |
+
+- **Triat: WASM amb tots els nuclis.** És exacte, va com Python i funciona a tots els navegadors.
+- **WebGPU, de moment no.** Més lent que la CPU amb la gràfica integrada, paquet més gros i
+  sessió més lenta de crear. A més, el WebGPU antic d'onnxruntime (JSEP, `ort.all`) no admet el
+  MatMulNBits de 8 bits; el nou (`ort.webgpu`) sí, i dona el mateix resultat. Queda per a PCs
+  amb GPU bona o mòbils amb pocs nuclis, potser amb un encoder fp16.
+- Als vídeos amb música el coll d'ampolla és ara el rescat: les finestres de l'etapa 2 són el
+  37–57 % del temps (anamfent RTF 0,54; Raquel 0,68).
+
+**La pàgina** (`web/index.html`):
+- `coi-serviceworker.js` posa les capçaleres COOP/COEP (GitHub Pages no ho permet) perquè la
+  pàgina estiga aïllada i el motor puga fer servir tots els nuclis; recarrega la pàgina una vegada.
+- `js/motor/worker.js`: el motor complet (amb la puntuació) en un Web Worker.
+- `js/motor/models.js`: la primera vegada baixa els models amb progrés i els desa a la memòria
+  cau del navegador (Cache API); després el motor està a punt en uns 3 s.
+- `js/audio.js`: l'àudio del vídeo amb el descodificador del navegador, a 16 kHz mono.
+- En acabar, la previsualització de la fase 5 (`previsualitza.html` ja no cal: la pàgina també
+  carrega un JSON) i les baixades SRT, VTT, TXT i JSON.
+- `onnxruntime-web` es serveix des del mateix origen (`js/vendor/ort/`): els fils són workers i
+  no es poden crear des d'un altre domini.
+
+**L'àudio del navegador:**
+- El re-mostreig del navegador no és el de Python (`soxr`); en un WAV, SNR de 37 dB. Canvia
+  alguna paraula, però no la qualitat: 38 clips WER 9,36 % → 9,01 %; Daniel 6,97 % → 7,29 %
+  (2 paraules).
+- **Error trobat als MP4:** els codificadors AAC posen unes mostres de preparació al principi i el
+  fitxer (llista d'edició, `elst`) diu que se les salte. ffmpeg i el `<video>` ho fan; el
+  `decodeAudioData` de Chrome no: l'àudio anava 0,115 s tard i els subtítols haurien eixit tard.
+  `js/mp4.js` llig la llista d'edició i `audio.js` salta aquelles mostres si el navegador no ho ha
+  fet (desfasament amb Python: +0,112 s → −0,008 s). Comprovat a Chrome; falta Firefox i Safari.
+- Als MP4 queden diferències de paraules respecte a Python (Raquel, 17 de 302), perquè el
+  descodificador AAC del navegador no és el de ffmpeg. Sense referència no se sap si és millor o
+  pitjor; la de `prova_anamfent` (fase 10) ho permetrà mesurar.
+
+**Fàcil de canviar el model:** un altre Conformer RNNT (p. ex. ajustat amb dades balears) o una
+altra variant només demana canviar el fitxer a `FITXERS` de `models.js` (la memòria cau va per
+adreça i el baixarà sol). Una altra arquitectura (Whisper, CTC) demanaria substituir `rnnt.js`.
+
 ## 11. Passos pendents, en detall
 
-### Fase 3 — Acabar: la pàgina del navegador
+### Fase 3 — El que queda: el mòbil
 
-- Un Web Worker amb el motor; la pàgina només mostra el progrés.
-- Models en memòria cau (Cache API o OPFS), amb barra de progrés de la primera baixada.
-- Lectura de l'àudio del vídeo: `decodeAudioData` o WebCodecs i re-mostreig a 16 kHz (si un
-  format falla, `ffmpeg.wasm`). Comprovar que el re-mostreig del navegador no empitjora el WER.
-- Fils WASM: `SharedArrayBuffer` necessita COOP/COEP; GitHub Pages no deixa posar capçaleres →
-  *service worker* tipus `coi-serviceworker`.
-- WebGPU per a l'encoder (q8w o fp16, ≈ 240 MB).
-- **Decisió de viabilitat:** mateix resultat que Python (fet), temps usable al PC i que no pete
-  en un mòbil de gamma mitjana.
+- **Decisió de viabilitat al mòbil:** que funcione en un Android i un iPhone de gamma mitjana
+  (memòria, temps, que no es tanque la pestanya). Cal la web pública, és a dir, la fase 4: el
+  *service worker* i la memòria cau només funcionen amb HTTPS o `localhost`.
 
 ### Fase 4 — Publicar els models a Hugging Face
 
@@ -619,3 +672,5 @@ navegador i al PC de l'usuari, no a Node.
 - [ ] Fer una referència de 2–3 minuts de `prova_anamfent` (el cas difícil).
 - [ ] Afegir els resultats d'aquesta setmana a l'informe setmanal de la beca.
 - [ ] Opcional: esborrar de l'historial de GitHub `prova_raquel_apunt.json` i `.srt` (pujats per error).
+- [ ] Comprovar la correcció de l'MP4 (`mp4.js`) a Firefox i Safari.
+- [ ] Provar `<b>`, `<i>` i colors a CapCut amb un SRT fet per la pàgina.

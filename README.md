@@ -9,10 +9,10 @@ Està pensat per a creadors de contingut en català, amb atenció especial al **
 
 🌐 **Web:** https://ferran-artero.github.io/subtitols-ca/
 
-> **Estat:** en desenvolupament. El motor complet (reconeixement, puntuació i segmentació) ja
-> funciona en JavaScript i dona el mateix resultat que la versió de referència en Python. Falta
-> la pàgina que l'executa al navegador; mentrestant, `previsualitza.html` ja permet ajustar els
-> subtítols d'una transcripció feta amb `eines/transcriu.py`.
+> **Estat:** en desenvolupament. La pàgina ja transcriu al navegador de cap a cap (reconeixement,
+> puntuació i subtítols) amb el mateix resultat que la versió de referència en Python i a la
+> mateixa velocitat. Falta publicar els models a Hugging Face perquè funcione a la web pública;
+> mentrestant es pot provar en local (vegeu [Provar la web en local](#provar-la-web-en-local)).
 
 ---
 
@@ -51,7 +51,9 @@ Motor de referència en Python, a la CPU d'un portàtil sense GPU:
 | Vídeo de notícies en balear amb música (2,8 min) | 7,0 % | 11,7 % | 0,78 | 0,91 | 0 |
 
 - **Sincronia:** les paraules comencen 0,08 s (mediana) després del subtítol de referència.
-- **Velocitat:** un vídeo de 3 minuts es transcriu en uns 30 s (RTF ≈ 0,18).
+- **Velocitat:** un vídeo de 3 minuts es transcriu en uns 30–45 s, tant en Python (RTF ≈ 0,18–0,22)
+  com al navegador (Chrome amb 8 fils, RTF ≈ 0,18–0,3). Els vídeos amb música tarden més pel
+  rescat de frases perdudes (RTF 0,5–0,7).
 
 La majoria d'errors que queden són formes dialectals que el model normalitza ("varen" → "van",
 "idò"). Es corregiran ajustant el model amb dades balears.
@@ -60,18 +62,39 @@ La majoria d'errors que queden són formes dialectals que el model normalitza ("
 
 ```
 subtitols-ca/
-├── web/              # la pàgina (és l'única carpeta que es publica a GitHub Pages)
-│   └── js/           # segmentació (subtitols.js) i motor en JavaScript (motor/)
-├── eines/            # motor de referència en Python i preparació dels models
-├── proves/          # comparen la versió JavaScript amb la de Python
-│   ├── transcriu.py  # àudio o vídeo -> subtítols, des de la línia d'ordres
-│   ├── motor_ref/    # el motor complet (numpy + onnxruntime + tokenizers) i la segmentació
-│   └── models/       # converteixen i quantitzen els models a ONNX
+├── web/                   # la pàgina (és l'única carpeta que es publica a GitHub Pages)
+│   ├── index.html         # pujar → transcriure → previsualitzar i baixar SRT/VTT/TXT/JSON
+│   ├── coi-serviceworker.js  # capçaleres COOP/COEP perquè el motor puga fer servir tots els nuclis
+│   └── js/
+│       ├── transcriu.js   # progrés i comunicació amb el motor
+│       ├── audio.js, mp4.js   # àudio del vídeo a 16 kHz (descodificador del navegador)
+│       ├── previsualitza.js, subtitols.js   # segmentació i previsualització
+│       ├── motor/         # motor en JavaScript (Web Worker, models en memòria cau)
+│       └── vendor/ort/    # onnxruntime-web 1.29.0 (WASM amb fils, MIT)
+├── eines/
+│   ├── transcriu.py       # àudio o vídeo -> subtítols, des de la línia d'ordres
+│   ├── serveix.py         # serveix la web en local amb els models de la teua carpeta
+│   ├── motor_ref/         # motor de referència (numpy + onnxruntime + tokenizers) i segmentació
+│   └── models/            # converteixen i quantitzen els models a ONNX
+├── proves/                # comparen la versió JavaScript amb la de Python
 ├── docs/             # història del projecte i decisions
 ├── MODELS.md         # models, autors, llicències i cites
 ├── LICENSE           # GPL-3.0
 └── NOTICE            # condició d'atribució
 ```
+
+## Provar la web en local
+
+Mentre els models no estiguen a Hugging Face, la web es pot provar amb una carpeta de models
+(`models_onnx/`, generada amb `eines/models`):
+
+```bash
+python eines/serveix.py --models ruta/a/models_onnx      # i obri http://localhost:8000/
+```
+
+La primera vegada la pàgina copia els models (≈ 460 MB) a la memòria cau del navegador; després
+el motor està a punt en uns segons. Amb `--sense-coi` el servidor no envia les capçaleres
+COOP/COEP, com GitHub Pages, i es pot comprovar que el service worker les posa.
 
 ## Fer servir el motor en Python
 
@@ -95,12 +118,13 @@ Quan estiguen publicats a Hugging Face, n'hi haurà prou de baixar-los.
 - [x] **Fase 0:** repositori, GitHub Pages i llicència
 - [x] **Fase 1:** models convertits a ONNX i quantitzats sense perdre qualitat
 - [x] **Fase 2:** motor de referència en Python, validat peça a peça
-- [ ] **Fase 3:** motor en JavaScript al navegador (WASM / WebGPU) — motor fet i validat; falta la pàgina
+- [x] **Fase 3:** motor en JavaScript al navegador (WASM amb diversos fils, Web Worker, models en
+      memòria cau), validat contra Python; WebGPU provat (de moment, més lent) — falta provar-lo al mòbil
 - [ ] **Fase 4:** models publicats a Hugging Face
 - [x] **Fase 5:** segmentació dels subtítols (caràcters per línia, velocitat de lectura, talls
       per frases, perfils per a vídeo horitzontal i vertical, ressaltat de paraules)
-- [ ] **Fase 6:** interfície: pujar, previsualitzar, editar la transcripció i descarregar
-      SRT/VTT/TXT
+- [ ] **Fase 6:** interfície acabada i editor de la transcripció (la pàgina actual ja puja,
+      transcriu, previsualitza i descarrega SRT/VTT/TXT/JSON)
 - [ ] **Fases 7–9:** robustesa, proves automàtiques i versió 1.0
 - [ ] **Després:** ajust del model amb dades balears i valencianes, i subtítols en temps real
 

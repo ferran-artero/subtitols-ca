@@ -55,9 +55,9 @@ export class Motor {
     return this.rnnt.encoder(m.mel, m.trames, m.valides);
   }
 
-  async paraules(e, inici, penal = 0) {
-    const { ids, trames } = await this.rnnt.descodifica(e, penal);
-    return { ps: aParaules(ids, trames, this.rnnt.peces, inici, this.rnnt.segTrama), ids, trames };
+  async paraules(e, inici, penal = 0, des = null) {
+    const r = await this.rnnt.descodifica(e, penal, des);
+    return { ps: aParaules(r.ids, r.trames, this.rnnt.peces, inici, this.rnnt.segTrama), ids: r.ids, trames: r.trames, r };
   }
 
   /** Etapa 2: finestres curtes al voltant del forat. */
@@ -92,7 +92,8 @@ export class Motor {
       // 1. tot el tros amb penalització
       for (const f of oberts) rescat.push({ forat: [...f], penal: PENAL, abast: "tros" });
       const penal = new Float32Array(T).fill(PENAL);
-      ({ ps: paraules, ids, trames } = await this.paraules(e, ini, penal));
+      let dec;
+      ({ ps: paraules, ids, trames, r: dec } = await this.paraules(e, ini, penal));
       // 2. finestres curtes
       let afegides = [];
       for (const f of zona(paraules)) {
@@ -105,14 +106,17 @@ export class Motor {
       let nivell = PENAL + 1.0;
       const st = this.rnnt.segTrama;
       while (oberts.length && nivell <= PENAL_MAX + 1e-6) {
+        let primera = T;                     // abans d'aquesta trama la penalització no canvia
         for (const [a, b] of oberts) {
           const i0 = Math.max(0, Math.trunc((a - MARGE - ini) / st));
+          primera = Math.min(primera, i0);
           const i1 = Math.min(T, Math.trunc(Math.ceil((b + MARGE - ini) / st)));
           for (let i = i0; i < i1; i++) penal[i] = Math.max(penal[i], nivell);
           rescat.push({ forat: [a, b], penal: nivell, abast: "forat" });
         }
         let nou;
-        ({ ps: nou, ids, trames } = await this.paraules(e, ini, penal));
+        // es continua la descodificació anterior des de la primera trama que canvia (resultat idèntic)
+        ({ ps: nou, ids, trames, r: dec } = await this.paraules(e, ini, penal, { prev: dec, trama: primera }));
         const ocupat = afegides.map((p) => [p.ini, p.fi]);
         paraules = nou.filter((p) => !ocupat.some(([i, f]) => i - 0.05 < centre(p) && centre(p) < f + 0.05));
         oberts = zona([...paraules, ...afegides]);

@@ -23,7 +23,7 @@ export class RNNT {
     this.tDec = 0;
   }
 
-  /** mel: Float32Array [80 × trames] -> {enc: Float32Array [512 × T], T, D}. */
+  /** mel: Float32Array [80 × trames] -> {enc: Float32Array [T' × 512] (una fila per trama), T, D}. */
   async encoder(mel, trames, valides) {
     const { Tensor } = this.ort;
     const t0 = performance.now();
@@ -33,32 +33,53 @@ export class RNNT {
       [nL]: new Tensor("int64", BigInt64Array.from([BigInt(valides)]), [1]),
     });
     const [o, l] = this.enc.outputNames;
-    const D = out[o].dims[1], Tt = out[o].dims[2];
+    const D = out[o].dims[1], Tt = out[o].dims[2], src = out[o].data;
+    // [D, T'] -> [T', D]: cada trama queda contigua i el bucle la passa sense còpies
+    const enc = new Float32Array(D * Tt);
+    for (let d = 0; d < D; d++) for (let t = 0, i = d * Tt; t < Tt; t++, i++) enc[t * D + d] = src[i];
     this.tEnc += performance.now() - t0;
-    return { enc: out[o].data, T: Number(out[l].data[0]), D, Tt };
+    return { enc, T: Number(out[l].data[0]), D, Tt };
   }
 
-  /** penal: número o Float32Array amb un valor per trama (es resta al logit del blank). */
-  async descodifica({ enc, T, D, Tt }, penal = 0) {
+  /**
+   * penal: número o Float32Array amb un valor per trama (es resta al logit del blank).
+   * des: {prev, trama}: continua una descodificació anterior a partir de la trama indicada.
+   * Com que la descodificació greedy només depén de les trames anteriors, el resultat és
+   * idèntic al de començar de zero sempre que la penalització no haja canviat abans d'aquella trama.
+   * Torna {ids, trames, punts}; punts[t] = estat a l'inici de la trama t (per a continuar-la).
+   */
+  async descodifica({ enc, T, D }, penal = 0, des = null) {
     const { Tensor } = this.ort;
     const [nE, nT, nL, nS1, nS2] = this.dec.inputNames;
     const [nO, , nO1, nO2] = this.dec.outputNames;
     const pt = typeof penal === "number" ? () => penal : (t) => penal[t];
     const t0 = performance.now();
-    let s1 = new Tensor("float32", new Float32Array(640), [1, 1, 640]);
-    let s2 = new Tensor("float32", new Float32Array(640), [1, 1, 640]);
-    let ultim = this.blank;
+    let s1, s2, ultim, ids, trames, punts, inici = 0;
+    if (des && des.trama > 0 && des.trama < T) {
+      inici = des.trama;
+      const p = des.prev.punts[inici];
+      [s1, s2, ultim] = [p.s1, p.s2, p.ultim];
+      ids = des.prev.ids.slice(0, p.n);
+      trames = des.prev.trames.slice(0, p.n);
+      punts = des.prev.punts.slice(0, inici);
+    } else {
+      s1 = new Tensor("float32", new Float32Array(640), [1, 1, 640]);
+      s2 = new Tensor("float32", new Float32Array(640), [1, 1, 640]);
+      ultim = this.blank;
+      ids = []; trames = []; punts = [];
+    }
     const lon = new Tensor("int32", Int32Array.from([1]), [1]);
-    const ids = [], trames = [];
-    const f = new Float32Array(D);
-    for (let t = 0; t < T; t++) {
-      for (let d = 0; d < D; d++) f[d] = enc[d * Tt + t];               // columna t de [D, T']
-      const ft = new Tensor("float32", f.slice(), [1, D, 1]);
+    const tg = new Int32Array(1), tgT = new Tensor("int32", tg, [1, 1]);   // es reutilitza: ort en copia les dades a cada crida
+    const ent = { [nT]: tgT, [nL]: lon };
+    for (let t = inici; t < T; t++) {
+      punts.push({ n: ids.length, ultim, s1, s2 });
+      ent[nE] = new Tensor("float32", enc.subarray(t * D, (t + 1) * D), [1, D, 1]);
       const p = Math.fround(pt(t));
       for (let s = 0; s < this.maxSimbols; s++) {
-        const out = await this.dec.run({
-          [nE]: ft, [nT]: new Tensor("int32", Int32Array.from([ultim]), [1, 1]), [nL]: lon, [nS1]: s1, [nS2]: s2,
-        });
+        tg[0] = ultim;
+        ent[nS1] = s1;
+        ent[nS2] = s2;
+        const out = await this.dec.run(ent);
         this.crides++;
         const lg = out[nO].data;
         let k = 0, millor = -Infinity;
@@ -75,6 +96,6 @@ export class RNNT {
       }
     }
     this.tDec += performance.now() - t0;
-    return { ids, trames };
+    return { ids, trames, punts };
   }
 }

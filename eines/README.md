@@ -5,6 +5,7 @@ Aquesta carpeta no es publica a la web (GitHub Pages només publica `web/`). Con
 ```
 eines/
 ├── transcriu.py      àudio o vídeo -> JSON + subtítols SRT/VTT/TXT
+├── serveix.py        serveix web/ en local amb els models de la teua carpeta (per a provar la pàgina)
 ├── requirements.txt
 ├── motor_ref/        el motor: la mateixa recepta que farà la web en JavaScript
 │   ├── audio.py      llegir a 16 kHz mono
