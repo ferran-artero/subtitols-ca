@@ -97,6 +97,9 @@ el motor està a punt en uns segons. Amb `?models=hf` (`http://localhost:8000/?m
 baixa de Hugging Face, com la web pública. Amb `--sense-coi` el servidor no envia les capçaleres
 COOP/COEP, com GitHub Pages, i es pot comprovar que el service worker les posa.
 
+Per a mesurar el rendiment (també a la web pública, p. ex. des d'un mòbil): `?fils=4` fixa el
+nombre de fils (per defecte, tots els nuclis) i `?gpu=1` executa l'encoder amb WebGPU.
+
 ## Fer servir el motor en Python
 
 Mentre la web no estiga acabada, es pot transcriure des de la línia d'ordres. Cal Python 3.10 o

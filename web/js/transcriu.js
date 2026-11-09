@@ -14,6 +14,8 @@ const LOCALHOST = ["localhost", "127.0.0.1"].includes(location.hostname);
 const pm = params.get("models");
 const LOCAL = pm === "hf" ? null : pm ? new URL(pm, location.href).href
   : LOCALHOST ? new URL("/models_onnx/", location.href).href : null;
+// Opcions per a proves: ?fils=N (nombre de fils) i ?gpu=1 (encoder en WebGPU).
+const FILS = Number(params.get("fils")) || null, GPU = params.get("gpu") === "1";
 
 let worker = null, llest = null, fitxer = null, resultat = null;
 const bTrans = $("#b-transcriu"), bCancel = $("#b-cancel"), barra = $("#barra"), pText = $("#p-text");
@@ -39,14 +41,15 @@ function preparaMotor() {
       else if (m.tipus === "estat") mostra(m.text);
       else if (m.tipus === "avis") avis = m.text;
       else if (m.tipus === "llest") {
-        $("#info-motor").textContent = `Motor a punt · ${m.fils} ${m.fils === 1 ? "fil" : "fils"}` +
+        $("#info-motor").textContent = `Motor a punt en ${m.segons.toFixed(1)} s · ${m.fils} ${m.fils === 1 ? "fil" : "fils"}` +
+          (m.gpu ? " · GPU" : m.gpuDemanada ? " · sense GPU (el navegador no té WebGPU)" : "") +
           (m.aillat ? "" : " (el navegador no permet més fils: anirà més lent)") + (avis ? `. ${avis}` : "");
         resol(m);
       } else if (m.tipus === "error") rebutja(new Error(m.missatge));
     };
     worker.onerror = (e) => rebutja(new Error(e.message || "Error en el motor"));
   });
-  worker.postMessage({ tipus: "carrega", local: LOCAL });
+  worker.postMessage({ tipus: "carrega", local: LOCAL, fils: FILS, gpu: GPU });
   llest.catch(() => { worker?.terminate(); worker = null; llest = null; });
   return llest;
 }
@@ -66,6 +69,7 @@ async function transcriu() {
     mostra("Preparant el motor…");
     await preparaMotor();
     mostra("Llegint l'àudio…");
+    const tA = performance.now();
     const pcm = await llegeixAudio(fitxer);
     const durada = pcm.length / SR;
     const t1 = performance.now();
@@ -83,7 +87,8 @@ async function transcriu() {
       worker.postMessage({ tipus: "transcriu", pcm }, [pcm.buffer]);
     });
     const s = (performance.now() - t1) / 1000;
-    mostra(`Fet: ${temps(durada)} d'àudio en ${temps(s)} (${resultat.paraules.length} paraules).`, 1);
+    mostra(`Fet: ${temps(durada)} d'àudio en ${temps(s)} (${resultat.paraules.length} paraules; ` +
+      `RTF ${(s / durada).toFixed(2)}; lectura de l'àudio ${((t1 - tA) / 1000).toFixed(1)} s).`, 1);
     document.dispatchEvent(new CustomEvent("transcripcio", {
       detail: { paraules: resultat.paraules, nom: fitxer.name.replace(/\.[^.]+$/, "") },
     }));
