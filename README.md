@@ -11,8 +11,8 @@ Està pensat per a creadors de contingut en català, amb atenció especial al **
 
 > **Estat:** en desenvolupament. La web ja transcriu al navegador de cap a cap (reconeixement,
 > puntuació i subtítols) amb el mateix resultat que la versió de referència en Python i a la
-> mateixa velocitat. Els models es baixen de Hugging Face. Falta provar-la en mòbils i acabar la
-> interfície i l'editor de la transcripció.
+> mateixa velocitat. Els models es baixen de Hugging Face. Funciona també al mòbil, més a poc a
+> poc. Falta acabar la interfície i l'editor de la transcripció.
 
 ---
 
@@ -53,7 +53,9 @@ Motor de referència en Python, a la CPU d'un portàtil sense GPU:
 - **Sincronia:** les paraules comencen 0,08 s (mediana) després del subtítol de referència.
 - **Velocitat:** un vídeo de 3 minuts es transcriu en uns 30–45 s, tant en Python (RTF ≈ 0,18–0,22)
   com al navegador (Chrome amb 8 fils, RTF ≈ 0,18–0,3). Els vídeos amb música tarden més pel
-  rescat de frases perdudes (RTF 0,5–0,7).
+  rescat de frases perdudes (RTF 0,5–0,7). En un mòbil de gamma mitjana (Galaxy A52s) va unes
+  4–5 vegades més lent que al PC (RTF ≈ 1,2): un vídeo d'un minut, un minut i quart. La primera
+  vegada, la baixada dels models tarda 1,5–2 minuts amb wifi.
 
 La majoria d'errors que queden són formes dialectals que el model normalitza ("varen" → "van",
 "idò"). Es corregiran ajustant el model amb dades balears.
@@ -123,7 +125,7 @@ Els models convertits també són a Hugging Face (vegeu [`MODELS.md`](MODELS.md)
 - [x] **Fase 1:** models convertits a ONNX i quantitzats sense perdre qualitat
 - [x] **Fase 2:** motor de referència en Python, validat peça a peça
 - [x] **Fase 3:** motor en JavaScript al navegador (WASM amb diversos fils, Web Worker, models en
-      memòria cau), validat contra Python; WebGPU provat (de moment, més lent) — falta provar-lo al mòbil
+      memòria cau), validat contra Python i provat en un mòbil Android; WebGPU provat (de moment, no compensa)
 - [x] **Fase 4:** models publicats a Hugging Face ([Conformer](https://huggingface.co/ferran-artero/stt_ca-es_conformer_transducer_large-onnx),
       [puntuació de Softcatalà](https://huggingface.co/ferran-artero/fullstop-catalan-punctuation-prediction-onnx))
 - [x] **Fase 5:** segmentació dels subtítols (caràcters per línia, velocitat de lectura, talls

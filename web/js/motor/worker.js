@@ -26,18 +26,25 @@ onmessage = async ({ data: m }) => {
 };
 
 /**
- * local: carpeta local dels models o null (Hugging Face). fils: nombre de fils (per defecte, tots
- * els nuclis). gpu: l'encoder en WebGPU (paquet ort.webgpu, que també admet el MatMulNBits de
- * 8 bits); la resta continua en WASM. Si no hi ha WebGPU, es fa tot en WASM.
+ * local: carpeta local dels models o null (Hugging Face).
+ * fils: nombre de fils (per defecte, tots els nuclis al PC i la meitat als mòbils).
+ * gpu: l'encoder en WebGPU (paquet ort.webgpu, que també admet el MatMulNBits de 8 bits); la resta
+ * continua en WASM. Si no hi ha WebGPU, es fa tot en WASM. Experimental: al Galaxy A52s la GPU
+ * es queda sense memòria ("device lost").
  */
 async function carrega({ local, fils: filsDemanats, gpu: volGpu }) {
   const t0 = performance.now();
   const gpu = !!volGpu && !!navigator.gpu && !!(await navigator.gpu.requestAdapter().catch(() => null));
   const ort = await import(gpu ? "../vendor/ort/ort.webgpu.min.mjs" : "../vendor/ort/ort.wasm.min.mjs");
   ort.env.wasm.wasmPaths = new URL("../vendor/ort/", import.meta.url).href;
-  // tots els nuclis si la pàgina està aïllada (COOP/COEP); si no, onnxruntime només pot fer-ne servir 1
-  const fils = !self.crossOriginIsolated ? 1
-    : Math.max(1, Math.min(filsDemanats || navigator.hardwareConcurrency || 4, 16));
+  // Sense aïllament (COOP/COEP), onnxruntime només pot fer servir 1 fil. Al PC, tots els nuclis. Als
+  // mòbils, la meitat: solen tindre la meitat de nuclis ràpids i la resta lents, i onnxruntime reparteix
+  // la feina a parts iguals, així que els ràpids esperen els lents (Galaxy A52s, 4 ràpids + 4 lents:
+  // 8 fils 58 s, 4 fils 30 s, 2 fils 41 s per a 25 s d'àudio).
+  const nuclis = navigator.hardwareConcurrency || 4;
+  const mobil = navigator.userAgentData?.mobile ?? /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
+  const perDefecte = mobil ? Math.max(1, Math.floor(nuclis / 2)) : nuclis;
+  const fils = !self.crossOriginIsolated ? 1 : Math.max(1, Math.min(filsDemanats || perDefecte, 16));
   ort.env.wasm.numThreads = fils;
   const { fitxers: f, baixat } = await carregaModels(local, (p) => post("baixada", p), (text) => post("avis", { text }));
   post("estat", { text: "Preparant els models…" });

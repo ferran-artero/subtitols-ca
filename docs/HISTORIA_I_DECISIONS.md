@@ -132,7 +132,7 @@ Abans de les respostes vam preparar un pla B: entrenar el nostre propi puntuador
 | 0 | Repositori, GitHub Pages, llicència, estructura | ✅ |
 | 1 | Convertir els models a ONNX i comprovar que no perden qualitat | ✅ |
 | 2 | Motor de referència en Python (només numpy + onnxruntime) | ✅ |
-| 3 | Motor en JavaScript al navegador + decisió de viabilitat | ✅ al PC; falta provar-lo al mòbil (després de la 4) |
+| 3 | Motor en JavaScript al navegador + decisió de viabilitat | ✅ (PC i Android; falta un iPhone) |
 | 4 | Publicar els models a Hugging Face | ✅ |
 | 5 | Segmentació i format dels subtítols | ✅ (feta abans de la 3) |
 | 6 | Interfície web | pendent |
@@ -598,17 +598,43 @@ Softcatalà pot enllaçar directament la seua conversió:
 - La llicència MIT ja surt al repositori de Softcatalà (sense fitxer LICENSE); la nostra fitxa
   manté l'atribució a Jordi Mas.
 
+### 10.7 Proves al mòbil (9 de novembre)
+
+Amb la web pública (GitHub Pages + Hugging Face), en un **Samsung Galaxy A52s 5G** (Snapdragon
+778G: 4 nuclis ràpids Cortex-A78 i 4 d'estalvi Cortex-A55), Chrome per a Android, wifi, un vídeo
+de 25 s:
+
+| Configuració | Primera baixada | Motor a punt (models ja desats) | Transcripció | RTF |
+|---|---|---|---|---|
+| Tots els nuclis (8 fils) | 117 s | 9 s | 58 s | 2,3 |
+| **`?fils=4`** | 109 s | 10 s | **30 s** | **1,2** |
+| `?fils=2` | 95 s | 7 s | 41 s | 1,6 |
+| `?gpu=1` (encoder en WebGPU) | 111 s | 17 s | la pestanya peta | – |
+| `?gpu=1&fils=4` | 92 s | 14 s | error: *device lost* | – |
+| *PC (Chrome, 8 fils), el mateix vídeo* | *50 s* | *2–3 s* | *12 s* | *0,48* |
+
+- **Funciona:** no es tanca la pestanya, la memòria cau guarda els models i les vegades següents
+  el motor està a punt en 7–10 s. La primera baixada depén de la xarxa (1,5–2 min amb wifi).
+- **Fils:** onnxruntime reparteix cada operació a parts iguals entre els fils; amb 8, els nuclis
+  ràpids esperen els lents. Amb 4 (els ràpids) va el doble de ràpid. **Decisió: als mòbils, per
+  defecte, la meitat dels nuclis** (la majoria en tenen la meitat o menys de ràpids; un iPhone de
+  6 nuclis en farà servir 3). Al PC, tots. `?fils=N` permet provar-ne d'altres.
+- **WebGPU:** la GPU d'aquest mòbil (Adreno 642L) es queda sense memòria amb l'encoder. Queda
+  com a opció experimental (`?gpu=1`).
+- Al mòbil va unes 4–5 vegades més lent que al PC (cada nucli és més lent i la memòria també):
+  usable per a vídeos curts (Reels, TikTok), millor el PC per als llargs.
+- La pàgina mostra el temps de preparació del motor i, en acabar, l'RTF: per a mesurar no cal
+  cronometrar.
+
 ## 11. Passos pendents, en detall
 
-### Fase 3 — El que queda: el mòbil
+### Fase 3 — El que queda
 
-- **Decisió de viabilitat al mòbil:** que funcione en un Android i un iPhone de gamma mitjana
-  (memòria, temps, que no es tanque la pestanya). Cal la web pública, és a dir, la fase 4: el
-  *service worker* i la memòria cau només funcionen amb HTTPS o `localhost`.
+- Provar un iPhone (Safari): memòria, fils (6 nuclis → 3) i vídeos `.mov` del mateix iPhone.
 
 ### Fase 4 — El que queda
 
-- Avisar en Jordi Mas (Softcatalà) amb l'enllaç a la conversió, tal com vam quedar.
+- Avisar en Jordi Mas (Softcatalà) amb l'enllaç a la conversió, tal com vam quedar (correu redactat).
 
 
 ### Fase 6 — Interfície i editor
@@ -693,4 +719,5 @@ Softcatalà pot enllaçar directament la seua conversió:
 - [ ] Afegir els resultats d'aquesta setmana a l'informe setmanal de la beca.
 - [ ] Opcional: esborrar de l'historial de GitHub `prova_raquel_apunt.json` i `.srt` (pujats per error).
 - [ ] Comprovar la correcció de l'MP4 (`mp4.js`) a Firefox i Safari.
+- [ ] Avisar al mòbil que pot tardar més o menys la durada del vídeo (fase 6).
 - [ ] Provar `<b>`, `<i>` i colors a CapCut amb un SRT fet per la pàgina.
