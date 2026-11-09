@@ -2,9 +2,9 @@
 // Copyright (C) 2026 Ferran Artero Merino — vegeu NOTICE
 //
 // Web Worker amb el motor: la pàgina no es bloqueja mentre es transcriu.
-// Missatges que rep:   {tipus: "carrega", base}        -> baixa/obri els models i crea les sessions
+// Missatges que rep:   {tipus: "carrega", local}       -> baixa/obri els models i crea les sessions
 //                      {tipus: "transcriu", pcm}       -> Float32Array a 16 kHz (transferit)
-// Missatges que envia: baixada, estat, llest, progres, resultat, error.
+// Missatges que envia: baixada, avis, estat, llest, progres, resultat, error.
 import { carregaModels } from "./models.js";
 import { llegeixNpy } from "./npy.js";
 import { Mel } from "./mel.js";
@@ -18,21 +18,21 @@ let motor = null;
 
 onmessage = async ({ data: m }) => {
   try {
-    if (m.tipus === "carrega") await carrega(m.base);
+    if (m.tipus === "carrega") await carrega(m.local);
     else if (m.tipus === "transcriu") await transcriu(m.pcm);
   } catch (e) {
     post("error", { missatge: (e && e.message) || String(e), pila: e && e.stack });
   }
 };
 
-async function carrega(base) {
+async function carrega(local) {
   const t0 = performance.now();
   const ort = await import("../vendor/ort/ort.wasm.min.mjs");
   ort.env.wasm.wasmPaths = new URL("../vendor/ort/", import.meta.url).href;
   // tots els nuclis si la pàgina està aïllada (COOP/COEP); si no, onnxruntime només pot fer-ne servir 1
   const fils = self.crossOriginIsolated ? Math.min(navigator.hardwareConcurrency || 4, 16) : 1;
   ort.env.wasm.numThreads = fils;
-  const { fitxers: f, baixat } = await carregaModels(base, (p) => post("baixada", p));
+  const { fitxers: f, baixat } = await carregaModels(local, (p) => post("baixada", p), (text) => post("avis", { text }));
   post("estat", { text: "Preparant els models…" });
   const txt = (b) => new TextDecoder().decode(b), json = (b) => JSON.parse(txt(b));
   const sessio = (b) => ort.InferenceSession.create(new Uint8Array(b), { executionProviders: ["wasm"], graphOptimizationLevel: "all" });

@@ -133,7 +133,7 @@ Abans de les respostes vam preparar un pla B: entrenar el nostre propi puntuador
 | 1 | Convertir els models a ONNX i comprovar que no perden qualitat | ✅ |
 | 2 | Motor de referència en Python (només numpy + onnxruntime) | ✅ |
 | 3 | Motor en JavaScript al navegador + decisió de viabilitat | ✅ al PC; falta provar-lo al mòbil (després de la 4) |
-| 4 | Publicar els models a Hugging Face | pendent |
+| 4 | Publicar els models a Hugging Face | ✅ |
 | 5 | Segmentació i format dels subtítols | ✅ (feta abans de la 3) |
 | 6 | Interfície web | pendent |
 | 7 | Robustesa (vídeos llargs, mòbils, errors) | pendent |
@@ -570,6 +570,34 @@ que comparen cada àudio amb Python i mesuren cada etapa) i després al reposito
 altra variant només demana canviar el fitxer a `FITXERS` de `models.js` (la memòria cau va per
 adreça i el baixarà sol). Una altra arquitectura (Whisper, CTC) demanaria substituir `rnnt.js`.
 
+### 10.6 Fase 4 — Models a Hugging Face (9 de novembre)
+
+**Decisió: dos repositoris**, un per model original, perquè cadascun té la seua llicència i
+Softcatalà pot enllaçar directament la seua conversió:
+
+| Repositori | Contingut | Llicència |
+|---|---|---|
+| `ferran-artero/stt_ca-es_conformer_transducer_large-onnx` | encoder `q8w` i fp32, `decoder_joint`, `tokens`, `config`, `mel_fb`, `finestra` i `silero-vad/` (la còpia validada) | CC-BY-4.0 |
+| `ferran-artero/fullstop-catalan-punctuation-prediction-onnx` | `onnx/model_q8pc.onnx` i fp32, tokenitzador i `config` | MIT |
+| `UMUTeam/catalan_capitalization_punctuation_restoration_int8` | no es puja: la web el baixa del repositori oficial | Apache-2.0 |
+
+- També s'han pujat les versions fp32, per a qui vulga fer-ne variants; la web no les baixa.
+- Les fitxes (en català, amb un resum en anglés) expliquen els fitxers, les entrades i eixides,
+  els resultats, la llicència, l'atribució i els canvis respecte a l'original (CC-BY-4.0 ho demana).
+- `eines/models/publica_hf.py` puja els dos repositoris (un commit per repositori) i escriu les
+  revisions. **La web fixa la revisió de cada repositori** a `web/js/motor/models.js`: la memòria cau
+  del navegador va per adreça, i una adreça amb revisió fixa no canvia mai de contingut. Per a
+  canviar de model, es puja i es canvia la revisió.
+- Cada model té la seua font i el seu camí: la UMU té el model a l'arrel (`model.onnx`), però en
+  local el guardem a `umu-oficial/onnx/` (primer error de la prova: 404).
+- Comprovat al Chrome del PC (`?models=hf`): els models es baixen de Hugging Face amb la pàgina
+  aïllada (COOP/COEP, sense problemes de CORS), es guarden a la memòria cau i la transcripció és
+  la mateixa. Daniel Sancho: 2 min 49 s d'àudio en 1 min 32 s, amb la puntuació.
+- La pàgina demana emmagatzematge persistent i avisa si el navegador no té espai per a guardar
+  els models (en la prova automàtica, un navegador amb poca quota no va poder guardar la UMU).
+- La llicència MIT ja surt al repositori de Softcatalà (sense fitxer LICENSE); la nostra fitxa
+  manté l'atribució a Jordi Mas.
+
 ## 11. Passos pendents, en detall
 
 ### Fase 3 — El que queda: el mòbil
@@ -578,17 +606,9 @@ adreça i el baixarà sol). Una altra arquitectura (Whisper, CTC) demanaria subs
   (memòria, temps, que no es tanque la pestanya). Cal la web pública, és a dir, la fase 4: el
   *service worker* i la memòria cau només funcionen amb HTTPS o `localhost`.
 
-### Fase 4 — Publicar els models a Hugging Face
+### Fase 4 — El que queda
 
-- Crear un repositori de models (`ferran-artero/...`) amb:
-  - el Conformer en ONNX (`encoder.q8w`, `decoder_joint`, `tokens`, `mel_fb`, `finestra`, `config`);
-  - el puntuador de Softcatalà en `q8pc`;
-  - la fitxa del model (*model card*) amb llicències (CC-BY-4.0, MIT) i cites.
-- La UMU es baixa directament del seu repositori oficial. Silero, del nostre o del seu.
-- Avisar en Jordi Mas (Softcatalà) amb l'enllaç, tal com vam quedar. Abans, comprovar que la
-  llicència MIT ja surt al seu repositori.
-- Comprovar que la web pot baixar els fitxers de Hugging Face (CORS) i que es guarden en memòria
-  cau.
+- Avisar en Jordi Mas (Softcatalà) amb l'enllaç a la conversió, tal com vam quedar.
 
 
 ### Fase 6 — Interfície i editor
@@ -668,7 +688,7 @@ adreça i el baixarà sol). Una altra arquitectura (Whisper, CTC) demanaria subs
       regla de noms "fiables" de la UMU; excloure paraules d'una lletra i interjeccions.
 - [ ] Provar a Premiere `<b>`, `<i>`, `<font color>` i el VTT; i a CapCut.
 - [ ] Decidir si `desfas` -0,08 s per defecte.
-- [ ] Comprovar que la llicència MIT de Softcatalà ja surt a Hugging Face.
+- [x] Comprovar que la llicència MIT de Softcatalà ja surt a Hugging Face (sí, sense fitxer LICENSE).
 - [ ] Fer una referència de 2–3 minuts de `prova_anamfent` (el cas difícil).
 - [ ] Afegir els resultats d'aquesta setmana a l'informe setmanal de la beca.
 - [ ] Opcional: esborrar de l'historial de GitHub `prova_raquel_apunt.json` i `.srt` (pujats per error).

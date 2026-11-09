@@ -10,6 +10,21 @@ nostres: cadascun té la seua llicència i els seus autors, que cal citar.
 | Majúscules | [UMUTeam/catalan_capitalization_punctuation_restoration_int8](https://huggingface.co/UMUTeam/catalan_capitalization_punctuation_restoration_int8) (sense canvis) | UMUTeam, Universidad de Murcia | Apache-2.0 |
 | Detecció de veu | [Silero VAD](https://github.com/snakers4/silero-vad) | Silero Team | MIT |
 
+## On es baixen
+
+La web baixa els models de Hugging Face, amb la revisió (commit) fixada a
+[`web/js/motor/models.js`](web/js/motor/models.js), i els guarda a la memòria cau del navegador:
+
+| Repositori | Contingut |
+|---|---|
+| [ferran-artero/stt_ca-es_conformer_transducer_large-onnx](https://huggingface.co/ferran-artero/stt_ca-es_conformer_transducer_large-onnx) | Conformer en ONNX (encoder `q8w` i fp32, `decoder_joint`, espectrograma) i Silero VAD |
+| [ferran-artero/fullstop-catalan-punctuation-prediction-onnx](https://huggingface.co/ferran-artero/fullstop-catalan-punctuation-prediction-onnx) | Puntuador de Softcatalà en ONNX (`q8pc` i fp32) |
+| [UMUTeam/catalan_capitalization_punctuation_restoration_int8](https://huggingface.co/UMUTeam/catalan_capitalization_punctuation_restoration_int8) | El repositori oficial de la UMU, sense canvis |
+
+Els dos primers es publiquen amb [`eines/models/publica_hf.py`](eines/models/publica_hf.py) i les
+fitxes de [`eines/models/fitxes_hf/`](eines/models/fitxes_hf/). Per a canviar un model: pujar-lo,
+posar la nova revisió a `models.js` i el navegador el baixarà sol.
+
 ## Cites
 
 Majúscules (UMU):

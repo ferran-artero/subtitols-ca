@@ -9,10 +9,10 @@ Està pensat per a creadors de contingut en català, amb atenció especial al **
 
 🌐 **Web:** https://ferran-artero.github.io/subtitols-ca/
 
-> **Estat:** en desenvolupament. La pàgina ja transcriu al navegador de cap a cap (reconeixement,
+> **Estat:** en desenvolupament. La web ja transcriu al navegador de cap a cap (reconeixement,
 > puntuació i subtítols) amb el mateix resultat que la versió de referència en Python i a la
-> mateixa velocitat. Falta publicar els models a Hugging Face perquè funcione a la web pública;
-> mentrestant es pot provar en local (vegeu [Provar la web en local](#provar-la-web-en-local)).
+> mateixa velocitat. Els models es baixen de Hugging Face. Falta provar-la en mòbils i acabar la
+> interfície i l'editor de la transcripció.
 
 ---
 
@@ -85,7 +85,7 @@ subtitols-ca/
 
 ## Provar la web en local
 
-Mentre els models no estiguen a Hugging Face, la web es pot provar amb una carpeta de models
+Per a provar canvis en la web abans de publicar-los, amb una carpeta de models
 (`models_onnx/`, generada amb `eines/models`):
 
 ```bash
@@ -93,7 +93,8 @@ python eines/serveix.py --models ruta/a/models_onnx      # i obri http://localho
 ```
 
 La primera vegada la pàgina copia els models (≈ 460 MB) a la memòria cau del navegador; després
-el motor està a punt en uns segons. Amb `--sense-coi` el servidor no envia les capçaleres
+el motor està a punt en uns segons. Amb `?models=hf` (`http://localhost:8000/?models=hf`) els
+baixa de Hugging Face, com la web pública. Amb `--sense-coi` el servidor no envia les capçaleres
 COOP/COEP, com GitHub Pages, i es pot comprovar que el service worker les posa.
 
 ## Fer servir el motor en Python
@@ -111,7 +112,7 @@ Escriu `el_meu_video.json` (paraules amb temps, signes i majúscules) i els subt
 (`el_meu_video.horitzontal.srt`…). Totes les opcions són a [`eines/README.md`](eines/README.md).
 
 Per a generar els models (`models_onnx/`) cal NeMo. Vegeu [`eines/README.md`](eines/README.md).
-Quan estiguen publicats a Hugging Face, n'hi haurà prou de baixar-los.
+Els models convertits també són a Hugging Face (vegeu [`MODELS.md`](MODELS.md)).
 
 ## Full de ruta
 
@@ -120,7 +121,8 @@ Quan estiguen publicats a Hugging Face, n'hi haurà prou de baixar-los.
 - [x] **Fase 2:** motor de referència en Python, validat peça a peça
 - [x] **Fase 3:** motor en JavaScript al navegador (WASM amb diversos fils, Web Worker, models en
       memòria cau), validat contra Python; WebGPU provat (de moment, més lent) — falta provar-lo al mòbil
-- [ ] **Fase 4:** models publicats a Hugging Face
+- [x] **Fase 4:** models publicats a Hugging Face ([Conformer](https://huggingface.co/ferran-artero/stt_ca-es_conformer_transducer_large-onnx),
+      [puntuació de Softcatalà](https://huggingface.co/ferran-artero/fullstop-catalan-punctuation-prediction-onnx))
 - [x] **Fase 5:** segmentació dels subtítols (caràcters per línia, velocitat de lectura, talls
       per frases, perfils per a vídeo horitzontal i vertical, ressaltat de paraules)
 - [ ] **Fase 6:** interfície acabada i editor de la transcripció (la pàgina actual ja puja,

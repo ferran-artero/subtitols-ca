@@ -8,9 +8,12 @@ import { esborraModels } from "./motor/models.js";
 
 const $ = (s) => document.querySelector(s);
 const params = new URLSearchParams(location.search);
-// Carpeta dels models. En local (serveix.py) són a /models_onnx/; a la web, a Hugging Face (fase 4).
-const BASE = params.get("models") ||
-  (["localhost", "127.0.0.1"].includes(location.hostname) ? new URL("/models_onnx/", location.href).href : null);
+// Models: de Hugging Face; en local (eines/serveix.py), de /models_onnx/. ?models=hf força Hugging
+// Face i ?models=<carpeta> fa servir una altra carpeta.
+const LOCALHOST = ["localhost", "127.0.0.1"].includes(location.hostname);
+const pm = params.get("models");
+const LOCAL = pm === "hf" ? null : pm ? new URL(pm, location.href).href
+  : LOCALHOST ? new URL("/models_onnx/", location.href).href : null;
 
 let worker = null, llest = null, fitxer = null, resultat = null;
 const bTrans = $("#b-transcriu"), bCancel = $("#b-cancel"), barra = $("#barra"), pText = $("#p-text");
@@ -26,21 +29,24 @@ function mostra(text, f = null) {
 /** Crea el worker i carrega els models (una sola vegada). */
 function preparaMotor() {
   if (llest) return llest;
-  if (!BASE) return Promise.reject(new Error("Els models encara no estan publicats. Obri la pàgina amb ?models=<carpeta dels models>."));
+  // que el navegador no esborre els models quan vaja just d'espai (sense garantia: ho decideix ell)
+  navigator.storage?.persist?.().catch(() => {});
+  let avis = "";
   worker = new Worker(new URL("./motor/worker.js", import.meta.url), { type: "module" });
   llest = new Promise((resol, rebutja) => {
     worker.onmessage = ({ data: m }) => {
       if (m.tipus === "baixada") mostra(`Baixant els models (només la primera vegada): ${mb(m.rebut)} de ${mb(m.total)} MB`, m.total ? m.rebut / m.total : null);
       else if (m.tipus === "estat") mostra(m.text);
+      else if (m.tipus === "avis") avis = m.text;
       else if (m.tipus === "llest") {
         $("#info-motor").textContent = `Motor a punt · ${m.fils} ${m.fils === 1 ? "fil" : "fils"}` +
-          (m.aillat ? "" : " (el navegador no permet més fils: anirà més lent)");
+          (m.aillat ? "" : " (el navegador no permet més fils: anirà més lent)") + (avis ? `. ${avis}` : "");
         resol(m);
       } else if (m.tipus === "error") rebutja(new Error(m.missatge));
     };
     worker.onerror = (e) => rebutja(new Error(e.message || "Error en el motor"));
   });
-  worker.postMessage({ tipus: "carrega", base: BASE });
+  worker.postMessage({ tipus: "carrega", local: LOCAL });
   llest.catch(() => { worker?.terminate(); worker = null; llest = null; });
   return llest;
 }
@@ -113,4 +119,3 @@ $("#b-esborra").addEventListener("click", async () => {
   await esborraModels();
   $("#info-motor").textContent = "Models esborrats de la memòria cau.";
 });
-if (!BASE) $("#info-motor").textContent = "Els models encara no estan publicats (fase 4).";

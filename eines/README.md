@@ -16,7 +16,7 @@ eines/
 │   ├── puntua.py     signes (Softcatalà) + majúscules (UMU)
 │   ├── motor.py      ho ajunta tot, amb el rescat de frases perdudes
 │   └── subtitols.py  paraules -> subtítols (segmentació, perfils, ressaltat)
-└── models/           generar models_onnx/ (només cal una vegada)
+└── models/           generar models_onnx/ (només cal una vegada) i publicar-los a Hugging Face
 ```
 
 ## Transcriure
@@ -69,6 +69,16 @@ python eines\models\baixa_vad.py            :: Silero VAD
 python eines\models\baixa_umu.py            :: majúscules: int8 oficial de la UMU
 python eines\models\quantitza.py            :: encoder.q8w.onnx i softcatala model_q8pc.onnx
 ```
+
+Per a publicar-los a Hugging Face (d'on els baixa la web), amb un token d'escriptura
+(`hf auth login`):
+
+```bat
+python eines\models\publica_hf.py              :: mostra què es pujaria
+python eines\models\publica_hf.py --puja       :: puja i escriu les revisions per a web/js/motor/models.js
+```
+
+Les fitxes dels repositoris són a `eines/models/fitxes_hf/`.
 
 Fitxers que fan servir el motor i la web (≈ 463 MB):
 
