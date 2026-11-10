@@ -4,10 +4,18 @@
 <html lang="ca">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Subtítols en català</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%232f6fde'/%3E%3Crect x='6' y='18' width='20' height='3' rx='1.5' fill='white'/%3E%3Crect x='9' y='23' width='14' height='3' rx='1.5' fill='white'/%3E%3C/svg%3E">
+<meta name="description" content="Subtítols en català fets dins del teu navegador: puja un vídeo o un àudio i baixa'ls en SRT o VTT. No s'envia res a cap servidor.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23d73333'/%3E%3Crect x='6' y='17' width='20' height='3' rx='1.5' fill='white'/%3E%3Crect x='9' y='22' width='14' height='3' rx='1.5' fill='white'/%3E%3C/svg%3E">
 <script>
+  // Tema (clar o fosc): el que ha triat l'usuari o, si no n'ha triat cap, el del sistema.
+  // Es posa abans de pintar la pàgina perquè no faça cap llampec.
+  (() => {
+    let tema = null;
+    try { tema = localStorage.getItem("subtitols-ca.tema"); } catch {}
+    document.documentElement.dataset.tema = tema || (matchMedia("(prefers-color-scheme: dark)").matches ? "fosc" : "clar");
+  })();
   // Per a fer servir tots els nuclis, la pàgina ha d'estar aïllada (COOP/COEP). GitHub Pages no
   // deixa posar capçaleres: les posa coi-serviceworker.js, i cal recarregar la pàgina una vegada.
   (() => {
@@ -22,129 +30,153 @@
     }).catch((e) => console.warn("service worker:", e));
   })();
 </script>
-<style>
-  :root {
-    --fons: #f6f5f2; --panell: #ffffff; --text: #1d1d1b; --suau: #6b6a66; --vora: #e2e0da;
-    --accent: #2f6fde; --avis: #b45309; --actiu: #eef3fd;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --fons: #151515; --panell: #1f1f1f; --text: #ecebe8; --suau: #9a9893; --vora: #333;
-            --accent: #6e9ff5; --avis: #f0a35a; --actiu: #23304a; }
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; font: 15px/1.45 system-ui, sans-serif; background: var(--fons); color: var(--text); }
-  header { padding: 14px 20px; border-bottom: 1px solid var(--vora); display: flex; gap: 16px;
-           align-items: baseline; flex-wrap: wrap; }
-  header h1 { font-size: 17px; margin: 0; }
-  header p { margin: 0; color: var(--suau); font-size: 13px; }
-  main { display: grid; grid-template-columns: 300px minmax(0, 1fr) 340px; gap: 16px; padding: 16px 20px; }
-  @media (max-width: 1100px) { main { grid-template-columns: 1fr; } }
-  section { background: var(--panell); border: 1px solid var(--vora); border-radius: 10px; padding: 14px; }
-  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--suau); margin: 0 0 10px; }
-  label { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 6px 0; font-size: 14px; }
-  input[type=number] { width: 80px; } input, select, button { font: inherit; }
-  fieldset { border: 0; border-top: 1px solid var(--vora); margin: 12px 0 0; padding: 10px 0 0; }
-  legend { font-size: 12px; color: var(--suau); padding: 0 4px 0 0; }
-  .fitxers label { display: block; } .fitxers input { width: 100%; margin-top: 4px; }
-  .botons { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-  button { padding: 7px 12px; border-radius: 7px; border: 1px solid var(--vora); background: var(--panell);
-           color: var(--text); cursor: pointer; }
-  button.prim { background: var(--accent); color: #fff; border-color: var(--accent); }
-  #escena { position: relative; background: #000; border-radius: 8px; overflow: hidden;
-            display: flex; justify-content: center; }
-  #video { display: block; max-width: 100%; max-height: 72vh; }
-  #capa { position: absolute; left: 0; right: 0; bottom: 8%; text-align: center; pointer-events: none;
-          padding: 0 4%; }
-  #capa.vertical { bottom: 28%; }
-  #capa span.linia { display: inline; background: rgba(0,0,0,.72); color: #fff; padding: .08em .3em;
-          line-height: 1.45; font-weight: 600; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-  #buit { color: #aaa; padding: 80px 20px; text-align: center; }
-  progress { width: 100%; height: 10px; margin-top: 10px; accent-color: var(--accent); }
-  #p-text, #info-motor { font-size: 13px; color: var(--suau); margin-top: 4px; }
-  details { margin-top: 12px; font-size: 14px; } summary { cursor: pointer; color: var(--suau); }
-  footer { padding: 8px 20px 20px; font-size: 12px; color: var(--suau); } footer a { color: inherit; }
-  #estat { color: var(--suau); font-size: 13px; margin-top: 8px; min-height: 1.4em; }
-  #avisos { color: var(--avis); font-size: 13px; }
-  #llista { max-height: 72vh; overflow: auto; }
-  .sub { padding: 6px 8px; border-radius: 6px; cursor: pointer; border-left: 3px solid transparent;
-         white-space: pre-line; font-size: 14px; }
-  .sub:hover { background: var(--actiu); }
-  .sub.actiu { background: var(--actiu); border-left-color: var(--accent); }
-  .sub small { display: block; color: var(--suau); font-size: 12px; }
-  .sub small b { color: var(--avis); font-weight: 500; }
-</style>
+<link rel="preload" href="fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/estil.css">
 </head>
-<body>
-<header>
-  <h1>Subtítols en català</h1>
-  <p>Puja un vídeo o un àudio: es transcriu dins del teu navegador i no s'envia res a cap servidor.</p>
+<body data-estat="inici">
+
+<header class="barra">
+  <a class="marca" href="./" aria-label="Subtítols en català: inici">
+    <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#d73333"/><rect x="6" y="17" width="20" height="3" rx="1.5" fill="#fff"/><rect x="9" y="22" width="14" height="3" rx="1.5" fill="#fff"/></svg>
+    <span>Subtítols en català</span>
+  </a>
+  <nav>
+    <button class="icona" id="b-tema" type="button" aria-label="Canvia entre tema clar i fosc" title="Tema clar o fosc">
+      <svg class="sol" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      <svg class="lluna" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+    </button>
+    <div class="menu">
+      <button class="icona" type="button" data-menu="m-opcions" aria-haspopup="true" aria-expanded="false" aria-label="Més opcions" title="Més opcions">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/></svg>
+      </button>
+      <div class="desplegable" id="m-opcions" hidden>
+        <button type="button" data-tria="f-json">Carrega una transcripció (.json)</button>
+        <button type="button" id="b-esborra">Esborra els models del navegador</button>
+        <a href="https://github.com/ferran-artero/subtitols-ca" target="_blank" rel="noopener">Codi font a GitHub</a>
+      </div>
+    </div>
+  </nav>
 </header>
+
+<input type="file" id="f-video" accept="video/*,audio/*" hidden>
+<input type="file" id="f-json" accept=".json,application/json" hidden>
+
 <main>
-  <section>
-    <h2>Vídeo o àudio</h2>
-    <div class="fitxers">
-      <label>Fitxer <input type="file" id="f-video" accept="video/*,audio/*"></label>
-    </div>
-    <div class="botons">
-      <button class="prim" id="b-transcriu" disabled>Transcriu</button>
-      <button id="b-cancel" hidden>Cancel·la</button>
-    </div>
-    <div id="progres" hidden><progress id="barra" max="1"></progress><div id="p-text"></div></div>
-    <div id="info-motor">La primera vegada es baixen els models (≈ 460 MB); després queden al navegador.</div>
-    <details>
-      <summary>Altres opcions</summary>
-      <div class="fitxers"><label>Carrega una transcripció (.json) <input type="file" id="f-json" accept=".json,application/json"></label></div>
-      <div class="botons"><button id="b-esborra">Esborra els models del navegador</button></div>
-    </details>
-    <form id="params">
-      <fieldset><legend>Subtítols</legend>
-        <label>Perfil <select name="perfil">
-          <option value="horitzontal">Horitzontal</option><option value="vertical">Vertical</option>
-          <option value="accessibilitat">Accessibilitat</option></select></label>
-        <label>Caràcters per línia <input type="number" name="max_car" min="8" max="80"></label>
-        <label>Línies <input type="number" name="max_linies" min="1" max="3"></label>
-        <label>Paraules màx. (0 = sense) <input type="number" name="max_paraules" min="0" max="20"></label>
-        <label>Caràcters/s màx. <input type="number" name="max_cps" min="5" max="40" step="0.5"></label>
-        <label>Durada mín. (s) <input type="number" name="durada_min" min="0" max="5" step="0.1"></label>
-        <label>Durada màx. (s) <input type="number" name="durada_max" min="1" max="15" step="0.5"></label>
-        <label>Desfasament (s) <input type="number" name="desfas" min="-1" max="1" step="0.02"></label>
-      </fieldset>
-      <fieldset><legend>Ressalta cada paraula</legend>
-        <label>Mode <select name="ressalta">
-          <option value="">No</option><option value="paraula">La que es diu</option>
-          <option value="progres">Progrés (karaoke)</option><option value="acumula">Apareixen d'una en una</option>
-        </select></label>
-        <label>Subratllat <input type="checkbox" name="subratlla"></label>
-        <label>Negreta <input type="checkbox" name="negreta"></label>
-        <label>Cursiva <input type="checkbox" name="cursiva"></label>
-        <label>Color <span><input type="checkbox" name="amb_color"> <input type="color" name="color" value="#ffff00"></span></label>
-        <label>Fons (només VTT) <span><input type="checkbox" name="amb_fons"> <input type="color" name="fons" value="#000000"></span></label>
-      </fieldset>
-    </form>
-    <div class="botons">
-      <button class="prim" data-baixa="srt">Baixa SRT</button>
-      <button data-baixa="vtt">VTT</button>
-      <button data-baixa="txt">TXT</button>
-      <button id="b-json" disabled>JSON</button>
-    </div>
-    <div id="avisos"></div>
+  <!-- ───────── Inici: triar o arrossegar el fitxer ───────── -->
+  <section id="inici">
+    <h1>Subtítols <em>en català</em>,<br>fets al teu navegador</h1>
+    <p class="entrada">Puja un vídeo o un àudio i baixa els subtítols a punt per a Premiere o CapCut.
+      Pensat per al valencià i el balear.</p>
+    <button class="zona" type="button" data-tria="f-video">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+      <strong>Arrossega ací un vídeo o un àudio</strong>
+      <span class="o">o</span>
+      <span class="boto prim">Tria un fitxer</span>
+    </button>
+    <ul class="fets">
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        <span><b>Privat.</b> El fitxer no ix del teu dispositiu: no s'envia res a cap servidor.</span></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>
+        <span><b>Sense instal·lar res.</b> La primera vegada es baixen els models (≈ 460 MB) i queden al navegador.</span></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 14h6M7 10h10M16 14h1"/></svg>
+        <span><b>SRT, VTT i TXT.</b> Amb puntuació, majúscules i talls pensats per a llegir bé.</span></li>
+    </ul>
   </section>
 
-  <section>
-    <div id="escena"><div id="buit">Tria un vídeo i prem «Transcriu».</div>
-      <video id="video" controls playsinline hidden></video><div id="capa"></div></div>
-    <div id="estat"></div>
-  </section>
+  <!-- ───────── Taller: vídeo, transcripció i subtítols ───────── -->
+  <section id="taller">
+    <div class="columna">
+      <div id="escena">
+        <div id="buit"><p>Transcripció carregada sense vídeo.</p>
+          <button class="boto" type="button" data-tria="f-video">Afig el vídeo per a veure-hi els subtítols</button></div>
+        <video id="video" controls playsinline hidden></video>
+        <div id="capa"></div>
+      </div>
 
-  <section>
-    <h2>Subtítols <span id="nombre"></span></h2>
-    <div id="llista"></div>
+      <div class="targeta tasca">
+        <div class="fitxer">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4.5-2.5z"/></svg>
+          <div class="nom"><strong id="nom-fitxer"></strong><small id="mida-fitxer"></small></div>
+          <button class="boto pla" type="button" id="b-canvia" data-tria="f-video">Canvia</button>
+          <button class="boto" type="button" id="b-cancel" hidden>Cancel·la</button>
+          <button class="boto prim" type="button" id="b-transcriu" disabled>Transcriu</button>
+        </div>
+        <div id="progres" hidden><progress id="barra" max="1"></progress><div id="p-text" role="status"></div></div>
+        <div id="info-motor">La primera vegada es baixen els models (≈ 460 MB); després queden al navegador.</div>
+      </div>
+    </div>
+
+    <aside class="targeta panell">
+      <form id="params">
+        <div class="parell">
+          <label class="camp"><span>Format</span>
+            <select name="perfil">
+              <option value="horitzontal">Horitzontal</option>
+              <option value="vertical">Vertical (Reels, TikTok)</option>
+              <option value="accessibilitat">Accessibilitat</option>
+            </select></label>
+          <label class="camp"><span>Ressalta paraules</span>
+            <select name="ressalta">
+              <option value="">No</option>
+              <option value="paraula">La que es diu</option>
+              <option value="progres">Progrés (karaoke)</option>
+              <option value="acumula">D'una en una</option>
+            </select></label>
+        </div>
+        <div class="marques">
+          <label class="xip"><input type="checkbox" name="subratlla"><span><u>Subratllat</u></span></label>
+          <label class="xip"><input type="checkbox" name="negreta"><span><b>Negreta</b></span></label>
+          <label class="xip"><input type="checkbox" name="cursiva"><span><i>Cursiva</i></span></label>
+          <span class="xip-color"><label class="xip"><input type="checkbox" name="amb_color"><span>Color</span></label>
+            <input type="color" name="color" value="#ffff00" aria-label="Color de la paraula ressaltada"></span>
+          <span class="xip-color"><label class="xip"><input type="checkbox" name="amb_fons"><span>Fons <small>(VTT)</small></span></label>
+            <input type="color" name="fons" value="#000000" aria-label="Color de fons de la paraula ressaltada"></span>
+        </div>
+        <details class="mes">
+          <summary>Més ajustos</summary>
+          <div class="graella">
+            <label class="camp"><span>Caràcters per línia</span><input type="number" name="max_car" min="8" max="80" inputmode="numeric"></label>
+            <label class="camp"><span>Línies</span><input type="number" name="max_linies" min="1" max="3" inputmode="numeric"></label>
+            <label class="camp"><span>Paraules màx. <small>(0 = sense límit)</small></span><input type="number" name="max_paraules" min="0" max="20" inputmode="numeric"></label>
+            <label class="camp"><span>Caràcters per segon màx.</span><input type="number" name="max_cps" min="5" max="40" step="0.5" inputmode="decimal"></label>
+            <label class="camp"><span>Durada mínima <small>(s)</small></span><input type="number" name="durada_min" min="0" max="5" step="0.1" inputmode="decimal"></label>
+            <label class="camp"><span>Durada màxima <small>(s)</small></span><input type="number" name="durada_max" min="1" max="15" step="0.5" inputmode="decimal"></label>
+            <label class="camp"><span>Desfasament <small>(s)</small></span><input type="number" name="desfas" min="-1" max="1" step="0.02"></label>
+          </div>
+        </details>
+      </form>
+
+      <h2>Subtítols <span id="nombre"></span></h2>
+      <div id="llista"></div>
+
+      <div class="peu">
+        <div id="avisos"></div>
+        <div id="estat"></div>
+        <div class="menu baixa">
+          <button class="boto prim" type="button" data-baixa="srt" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>Baixa SRT</button>
+          <button class="boto prim" type="button" data-menu="m-baixa" aria-haspopup="true" aria-expanded="false" aria-label="Altres formats" title="Altres formats" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="desplegable amunt" id="m-baixa" hidden>
+            <button type="button" data-baixa="vtt"><b>VTT</b> per a la web i YouTube</button>
+            <button type="button" data-baixa="txt"><b>TXT</b> només el text</button>
+            <button type="button" id="b-json" disabled><b>JSON</b> amb el temps de cada paraula</button>
+          </div>
+        </div>
+      </div>
+    </aside>
   </section>
 </main>
+
 <footer>© 2026 Ferran Artero Merino · Llicència GPL-3.0 ·
   <a href="https://github.com/ferran-artero/subtitols-ca">Codi font</a> ·
   Models: Projecte AINA (Conformer), Softcatalà i UMU (puntuació), Silero VAD</footer>
+
+<div id="solta" hidden><div><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>Solta el fitxer ací</div></div>
+<div id="nota" role="status" hidden></div>
+
 <script type="module" src="js/previsualitza.js"></script>
 <script type="module" src="js/transcriu.js"></script>
+<script type="module" src="js/interficie.js"></script>
 </body>
 </html>

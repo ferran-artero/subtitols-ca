@@ -44,6 +44,7 @@ function preparaMotor() {
         $("#info-motor").textContent = `Motor a punt en ${m.segons.toFixed(1)} s · ${m.fils} ${m.fils === 1 ? "fil" : "fils"}` +
           (m.gpu ? " · GPU" : m.gpuDemanada ? " · sense GPU (el navegador no té WebGPU)" : "") +
           (m.aillat ? "" : " (el navegador no permet més fils: anirà més lent)") + (avis ? `. ${avis}` : "");
+        mostra("Motor a punt.", 1);
         resol(m);
       } else if (m.tipus === "error") rebutja(new Error(m.missatge));
     };
