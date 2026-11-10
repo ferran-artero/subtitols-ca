@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Ferran Artero Merino — vegeu NOTICE
 //
-// Previsualització: vídeo + JSON del motor -> subtítols segmentats en temps real.
-// Cada canvi de paràmetre només torna a executar segmenta() (uns ms); no es transcriu de nou.
+// Previsualització: vídeo + JSON del motor -> subtítols segmentats en temps real, correccions i
+// baixades. Cada canvi de paràmetre només torna a executar segmenta() (uns ms); no es transcriu de nou.
 import * as S from "./subtitols.js";
 import { nota } from "./interficie.js";
 
 const $ = (s) => document.querySelector(s);
 const form = $("#params"), video = $("#video"), capa = $("#capa"), llista = $("#llista");
-const CLAU = "subtitols-ca.params";
+const CLAU = "subtitols-ca.params", CLAU_SESSIO = "subtitols-ca.sessio";
 
-let paraules = null, nomBase = "subtitols", P = null, cues = [], finals = [], actiu = -1;
+// doc: el JSON del motor sencer (és el que es baixa i es desa); paraules = doc.paraules
+let doc = null, paraules = null, nomBase = "", P = null, cues = [], finals = [], actiu = -1;
 const desfets = [];                       // correccions fetes, per a desfer-les
 
 // ---------------------------------------------------------------- paràmetres
@@ -81,18 +82,30 @@ function pintaLlista() {
     d.dataset.i = i;
     d.innerHTML = `<small>${fmt(c.ini)} → ${fmt(c.fi)}</small><span class="text"></span>` +
       `<button type="button" class="llapis" aria-label="Corregeix aquest subtítol" title="Corregeix">${LLAPIS}</button>`;
-    d.children[1].textContent = S.text(c);
+    c.linies.forEach((lin, l) => {        // una <span> per paraula: en clicar-la, el vídeo hi salta
+      if (l) d.children[1].append("\n");
+      lin.forEach((p, k) => {
+        const s = document.createElement("span");
+        s.className = "p";
+        s.dataset.t = p.ini;
+        s.textContent = p.text + (p.punt || "");
+        d.children[1].append(k ? " " : "", s);
+      });
+    });
     frag.append(d);
   });
   llista.replaceChildren(frag);
-  document.dispatchEvent(new CustomEvent("subtitols", { detail: cues.length }));   // per a interficie.js
+  document.dispatchEvent(new CustomEvent("subtitols", { detail: { nombre: cues.length, nom: nomBase } }));   // per a interficie.js
 }
 
 llista.addEventListener("click", (e) => {
   const d = e.target.closest(".sub");
   if (!d || d.classList.contains("editant")) return;
   if (e.target.closest(".llapis")) edita(d);
-  else if (video.src) { video.currentTime = cues[+d.dataset.i].ini + 0.001; video.play(); }
+  else if (video.src) {
+    video.currentTime = +(e.target.closest(".p")?.dataset.t ?? cues[+d.dataset.i].ini) + 0.001;
+    video.play();
+  }
 });
 
 // ---------------------------------------------------------------- correccions
@@ -143,10 +156,8 @@ function edita(d) {
     const text = caixa.innerText.trim();
     caixa.contentEditable = "false";
     d.classList.remove("editant");
-    if (!desa || text.replace(/\s+/g, " ") === abans.replace(/\s+/g, " ")) { caixa.textContent = abans; return; }
-    const i = paraules.indexOf(c.paraules[0]), noves = paraulesNoves(text, c.paraules);
-    desfets.push({ i, noves, velles: paraules.splice(i, c.paraules.length, ...noves) });
-    recalcula();
+    if (!desa || text.replace(/\s+/g, " ") === abans.replace(/\s+/g, " ")) { recalcula(); return; }
+    corregeix([{ i: paraules.indexOf(c.paraules[0]), n: c.paraules.length, noves: paraulesNoves(text, c.paraules) }]);
   };
   const tecla = (e) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); acaba(true); }
@@ -156,11 +167,49 @@ function edita(d) {
   caixa.addEventListener("blur", () => acaba(true), { once: true });
 }
 
-$("#b-desfes").addEventListener("click", () => {
-  const u = desfets.pop();
-  if (!u) return;
-  paraules.splice(u.i, u.noves.length, ...u.velles);
+/** Aplica els canvis [{i, n, noves}] (de l'últim al primer, perquè els índexs valguen) i els
+ *  apunta junts per a desfer-los d'una vegada. */
+function corregeix(canvis) {
+  desfets.push(canvis.map(({ i, n, noves }) => ({ i, noves, velles: paraules.splice(i, n, ...noves) })));
+  actualitza();
+}
+
+function actualitza() {
+  doc.text = S.txt(paraules).trimEnd();   // el text sencer del JSON, amb les correccions
   recalcula();
+  desaSessio();
+}
+
+$("#b-desfes").addEventListener("click", () => {
+  for (const u of (desfets.pop() || []).reverse()) paraules.splice(u.i, u.noves.length, ...u.velles);
+  actualitza();
+});
+
+// Cerca i substitueix: paraules senceres (una o diverses de seguides), sense distingir majúscules.
+// Es conserven el signe de darrere i la majúscula inicial del que se substitueix.
+const fCerca = $("#cerca");
+$("#b-cerca").addEventListener("click", () => {
+  fCerca.hidden = !fCerca.hidden;
+  if (!fCerca.hidden) fCerca.que.focus();
+});
+fCerca.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const que = fCerca.que.value.toLowerCase().split(/\s+/).filter(Boolean), n = que.length;
+  if (!paraules || !n) return;
+  const canvis = [];
+  for (let i = paraules.length - n; i >= 0; i--) {
+    if (!que.every((q, k) => paraules[i + k].text.toLowerCase() === q)) continue;
+    const velles = paraules.slice(i, i + n);
+    let per = fCerca.per.value.trim();
+    if (per && /^\p{Lu}/u.test(velles[0].text)) per = per[0].toUpperCase() + per.slice(1);
+    if (per && !SIGNES.includes(per.at(-1))) per += velles.at(-1).punt || "";
+    const noves = paraulesNoves(per, velles);
+    if (noves.length === n && noves.every((p, k) => p === velles[k])) continue;      // ja era igual
+    canvis.push({ i, n, noves });
+    i -= n - 1;
+  }
+  if (canvis.length) corregeix(canvis);
+  nota(canvis.length ? `${canvis.length} ${canvis.length === 1 ? "canvi fet" : "canvis fets"}.` : `No he trobat «${fCerca.que.value.trim()}».`);
 });
 
 // ---------------------------------------------------------------- capa sobre el vídeo
@@ -236,7 +285,15 @@ function midaLletra() {
   capa.style.fontSize = `${Math.max(12, h * (vertical ? 0.045 : 0.055))}px`;
 }
 new ResizeObserver(midaLletra).observe(video);
-video.addEventListener("loadedmetadata", midaLletra);
+video.addEventListener("loadedmetadata", () => {
+  midaLletra();
+  if (!video.videoWidth) return;          // àudio sol
+  // el format es tria sol: vídeo vertical -> perfil vertical (i a l'inrevés)
+  const vertical = video.videoHeight > video.videoWidth;
+  if (vertical === (form.perfil.value === "vertical")) return;
+  form.perfil.value = vertical ? "vertical" : "horitzontal";
+  form.perfil.dispatchEvent(new Event("input", { bubbles: true }));
+});
 video.addEventListener("seeked", pintaCapa);
 
 // ---------------------------------------------------------------- fitxers i baixades
@@ -257,37 +314,44 @@ $("#f-json").addEventListener("change", async (e) => {
   try {
     const d = JSON.parse(await f.text());
     if (!Array.isArray(d.paraules)) throw new Error("no té el camp «paraules»");
-    paraules = d.paraules;
-    nomBase = f.name.replace(/\.json$/i, "");
-    desfets.length = 0;
-    recalcula();
+    carrega(d, f.name.replace(/\.json$/i, "").replace(/^subtitols_/, ""));
   } catch (err) {
     nota(`No he pogut llegir el JSON: ${err.message}`);
   }
 });
 
+/** Subtítols nous: d'una transcripció acabada de fer, d'un JSON o de la sessió desada. */
+function carrega(d, nom) {
+  doc = d; paraules = d.paraules; nomBase = nom;
+  desfets.length = 0;
+  recalcula();
+  desaSessio();
+}
+
+// La transcripció (amb les correccions) es desa al navegador: si es tanca la pestanya, es pot
+// continuar. El vídeo no es desa: cal tornar-lo a afegir.
+function desaSessio() {
+  try { localStorage.setItem(CLAU_SESSIO, JSON.stringify({ nom: nomBase, doc })); } catch { /* sense memòria o massa gran */ }
+}
+
 function neteja() {
-  paraules = null; cues = []; finals = []; actiu = -1; desfets.length = 0;
+  doc = null; paraules = null; cues = []; finals = []; actiu = -1; desfets.length = 0;
   capa.innerHTML = "";
   $("#avisos").textContent = "";
   pintaLlista();
 }
 
 // transcripció feta al navegador (transcriu.js)
-document.addEventListener("transcripcio", (e) => {
-  paraules = e.detail.paraules;
-  nomBase = e.detail.nom;
-  desfets.length = 0;
-  recalcula();
-});
+document.addEventListener("transcripcio", (e) => carrega(e.detail.resultat, e.detail.nom));
 
 document.querySelectorAll("[data-baixa]").forEach((b) => b.addEventListener("click", () => {
   if (!paraules) return;
   const fmt = b.dataset.baixa;
-  const cont = fmt === "srt" ? S.srt(finals, P) : fmt === "vtt" ? S.vtt(finals, P) : S.txt(paraules);
+  const cont = fmt === "srt" ? S.srt(finals, P) : fmt === "vtt" ? S.vtt(finals, P)
+    : fmt === "txt" ? S.txt(paraules) : JSON.stringify(doc, null, 1);
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([cont], { type: "text/plain;charset=utf-8" }));
-  a.download = `${nomBase}.${form.perfil.value}${P.ressalta ? "." + P.ressalta : ""}.${fmt}`;
+  a.download = `subtitols_${nomBase}.${fmt}`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }));
@@ -298,3 +362,15 @@ let desats = null;
 try { desats = JSON.parse(localStorage.getItem(CLAU) || "null"); } catch { /* sense memòria */ }
 omple(desats?.perfil || "horitzontal", desats?.P || {});
 P = llig();
+
+let sessio = null;
+try { sessio = JSON.parse(localStorage.getItem(CLAU_SESSIO) || "null"); } catch { /* sense memòria */ }
+if (sessio?.doc?.paraules?.length) {
+  $("#sessio-nom").textContent = sessio.nom;
+  $("#sessio").hidden = false;
+  $("#b-recupera").addEventListener("click", () => carrega(sessio.doc, sessio.nom));
+  $("#b-descarta").addEventListener("click", () => {
+    try { localStorage.removeItem(CLAU_SESSIO); } catch { /* sense memòria */ }
+    $("#sessio").hidden = true;
+  });
+}

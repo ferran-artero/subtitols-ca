@@ -54,7 +54,7 @@ const ocupat = () => !$("#b-cancel").hidden;          // transcriu.js mostra «C
 document.querySelectorAll("[data-tria]").forEach((b) =>
   b.addEventListener("click", () => $(`#${b.dataset.tria}`).click()));
 
-/** Posa un fitxer arrossegat a l'<input> i avisa com si l'usuari l'haguera triat. */
+/** Posa un fitxer arrossegat a l'<input> i avisa com si l'usuari l'hagués triat. */
 function posa(input, fitxer) {
   const dt = new DataTransfer();
   dt.items.add(fitxer);
@@ -87,21 +87,20 @@ addEventListener("drop", (e) => {
 
 // body[data-estat]: "inici" (cap fitxer), "taller" (fitxer triat: botó «Transcriu») i "fet" (hi ha
 // subtítols: el botó passa a ser «Baixa»). previsualitza.js avisa amb "subtitols" cada vegada que
-// pinta la llista (detail = nombre de subtítols).
+// pinta la llista (detail = {nombre, nom}).
 const mida = (b) => (b < 1e6 ? `${Math.max(1, Math.round(b / 1e3))} kB` : b < 1e9 ? `${(b / 1e6).toFixed(b < 1e7 ? 1 : 0)} MB` : `${(b / 1e9).toFixed(2)} GB`);
 const fitxa = (nom, detall) => { $("#nom-fitxer").textContent = nom; $("#mida-fitxer").textContent = detall; };
 
-document.addEventListener("subtitols", (e) => { cos.dataset.estat = e.detail ? "fet" : "taller"; });
+document.addEventListener("subtitols", ({ detail: d }) => {
+  cos.dataset.estat = d.nombre ? "fet" : "taller";
+  if (d.nombre && !fVideo.files[0]) fitxa(d.nom, "Transcripció sense vídeo");
+});
 fVideo.addEventListener("change", () => {
   const f = fVideo.files[0];
   if (!f) return;
   if (cos.dataset.estat === "inici") cos.dataset.estat = "taller";
   fitxa(f.name, mida(f.size));
   $("#escena").classList.toggle("audio", f.type.startsWith("audio/"));
-});
-fJson.addEventListener("change", () => {
-  const f = fJson.files[0];
-  if (f && !fVideo.files[0]) fitxa(f.name, "Transcripció carregada");
 });
 
 // les marques del ressaltat només es mostren si hi ha ressaltat

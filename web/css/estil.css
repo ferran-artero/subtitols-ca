@@ -148,6 +148,10 @@ body[data-estat="inici"] #taller, body:not([data-estat="inici"]) #inici { displa
 #progres { margin-top: 14px; }
 #p-text { margin-top: 8px; font-size: 13.5px; color: var(--text2); font-variant-numeric: tabular-nums; }
 #info-motor { margin-top: 10px; font-size: 12.5px; color: var(--suau); }
+#info-motor:empty { display: none; }
+#sessio { margin: 28px 0 0; font-size: 14px; color: var(--text2); }
+#sessio button { padding: 0; border: 0; background: none; cursor: pointer; color: var(--accent-text); font-weight: 550; }
+#sessio button:hover { text-decoration: underline; }
 
 progress { display: block; appearance: none; -webkit-appearance: none; width: 100%; height: 6px; border: 0;
            border-radius: 99px; background: var(--enfonsat); overflow: hidden; }
@@ -168,12 +172,12 @@ progress:indeterminate::-moz-progress-bar { background: transparent; }
 .parell, .graella { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .camp { display: flex; flex-direction: column; justify-content: flex-end; gap: 5px; min-width: 0; }
 .camp > span { font-size: 12.5px; color: var(--text2); font-weight: 500; }
-select, input[type="number"] { width: 100%; height: 40px; padding: 0 12px; border: 1px solid var(--vora-forta);
+select, input[type="number"], input[type="text"] { width: 100%; height: 40px; padding: 0 12px; border: 1px solid var(--vora-forta);
                                border-radius: 10px; background: var(--panell); }
 select { appearance: none; -webkit-appearance: none; padding-right: 34px; cursor: pointer; text-overflow: ellipsis;
          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b8a86' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
          background-repeat: no-repeat; background-position: right 10px center; background-size: 16px; }
-select:hover, input[type="number"]:hover { border-color: var(--suau); }
+select:hover, input[type="number"]:hover, input[type="text"]:hover { border-color: var(--suau); }
 
 .marques { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 #params:not([data-ressalta]) .marques { display: none; }
@@ -204,6 +208,12 @@ input[type="color"]::-moz-color-swatch { border: 0; }
 
 .panell h2 { margin: 0; padding: 14px 16px 6px; font-size: 13px; font-weight: 600; color: var(--text2);
              letter-spacing: .01em; display: flex; align-items: baseline; gap: 6px; }
+#b-cerca { position: static; translate: none; opacity: 1; align-self: center; margin: -6px -6px -6px auto; }
+#b-desfes + #b-cerca { margin-left: 4px; }
+#b-desfes[hidden] + #b-cerca { margin-left: auto; }
+#cerca { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; padding: 4px 16px 10px; }
+.sub .p:hover { text-decoration: underline; text-decoration-color: var(--suau); text-underline-offset: 3px; }
+.sub.editant .p:hover { text-decoration: none; }
 #b-desfes { margin-left: auto; padding: 0; border: 0; background: none; cursor: pointer; font-size: 12.5px;
             font-weight: 500; color: var(--accent-text); }
 #b-desfes:hover { text-decoration: underline; }
@@ -270,7 +280,7 @@ footer a { color: inherit; }
 }
 @media (max-width: 560px) {
   body { font-size: 16px; }                      /* amb menys de 16 px, l'iPhone amplia en tocar un camp */
-  select, input[type="number"] { height: 44px; font-size: 16px; }
+  select, input[type="number"], input[type="text"] { height: 44px; font-size: 16px; }
   .boto { min-height: 44px; }
   .marca { font-size: 15px; }
   #inici { padding-top: 20px; }

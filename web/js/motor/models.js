@@ -105,6 +105,14 @@ export async function carregaModels(local = null, progres = () => {}, avis = () 
   return { fitxers: res, baixat: rebut };
 }
 
+/** Diu si tots els models ja són a la memòria cau (no caldrà baixar res). */
+export async function modelsDesats(local = null) {
+  const cau = await obriCau();
+  if (!cau) return false;
+  for (const u of Object.values(adreces(local))) if (!(await cau.match(u))) return false;
+  return true;
+}
+
 /** Esborra els models de la memòria cau. */
 export async function esborraModels() {
   try { return await caches.delete(CAU); } catch { return false; }

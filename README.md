@@ -12,8 +12,8 @@ Està pensat per a creadors de contingut en català, amb atenció especial al **
 > **Estat:** en desenvolupament. La web ja transcriu al navegador de cap a cap (reconeixement,
 > puntuació i subtítols) amb el mateix resultat que la versió de referència en Python i a la
 > mateixa velocitat. Els models es baixen de Hugging Face. Funciona també al mòbil, més a poc a
-> poc. La interfície ja permet arrossegar el fitxer, previsualitzar, corregir els subtítols i
-> baixar-los; falta completar l'editor (buscar i substituir) i la robustesa.
+> poc. La interfície ja permet arrossegar el fitxer, previsualitzar, corregir els subtítols
+> (també amb cerca i substitueix) i baixar-los; falta la robustesa amb vídeos llargs.
 
 ---
 
@@ -83,7 +83,6 @@ subtitols-ca/
 │   ├── motor_ref/         # motor de referència (numpy + onnxruntime + tokenizers) i segmentació
 │   └── models/            # converteixen i quantitzen els models a ONNX
 ├── proves/                # comparen la versió JavaScript amb la de Python
-├── docs/             # història del projecte i decisions
 ├── MODELS.md         # models, autors, llicències i cites
 ├── LICENSE           # GPL-3.0
 └── NOTICE            # condició d'atribució
@@ -135,13 +134,10 @@ Els models convertits també són a Hugging Face (vegeu [`MODELS.md`](MODELS.md)
 - [x] **Fase 5:** segmentació dels subtítols (caràcters per línia, velocitat de lectura, talls
       per frases, perfils per a vídeo horitzontal i vertical, ressaltat de paraules)
 - [ ] **Fase 6:** interfície i editor de la transcripció (fet: disseny per a ordinador i mòbil,
-      tema clar i fosc, arrossegar fitxers i correcció de cada subtítol; falta buscar i
-      substituir i saltar al vídeo des d'una paraula)
+      tema clar i fosc, arrossegar fitxers, correcció dels subtítols amb cerca i substitueix, i
+      transcripció desada al navegador; falta provar quines marques de ressaltat respecta cada editor)
 - [ ] **Fases 7–9:** robustesa, proves automàtiques i versió 1.0
 - [ ] **Després:** ajust del model amb dades balears i valencianes, i subtítols en temps real
-
-La història completa del projecte i el perquè de cada decisió són a
-[`docs/HISTORIA_I_DECISIONS.md`](docs/HISTORIA_I_DECISIONS.md).
 
 ## Models i llicències
 

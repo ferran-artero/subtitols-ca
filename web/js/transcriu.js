@@ -2,9 +2,9 @@
 // Copyright (C) 2026 Ferran Artero Merino — vegeu NOTICE
 //
 // Transcripció al navegador: models (worker) + lectura de l'àudio + progrés. Quan acaba, envia
-// l'esdeveniment "transcripcio" amb les paraules, i previsualitza.js en fa els subtítols.
+// l'esdeveniment "transcripcio" amb el resultat, i previsualitza.js en fa els subtítols.
 import { llegeixAudio, SR } from "./audio.js";
-import { esborraModels } from "./motor/models.js";
+import { esborraModels, modelsDesats } from "./motor/models.js";
 
 const $ = (s) => document.querySelector(s);
 const params = new URLSearchParams(location.search);
@@ -16,9 +16,11 @@ const LOCAL = pm === "hf" ? null : pm ? new URL(pm, location.href).href
   : LOCALHOST ? new URL("/models_onnx/", location.href).href : null;
 // Opcions per a proves: ?fils=N (nombre de fils) i ?gpu=1 (encoder en WebGPU).
 const FILS = Number(params.get("fils")) || null, GPU = params.get("gpu") === "1";
+const MOBIL = navigator.userAgentData?.mobile ?? /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
 
-let worker = null, llest = null, fitxer = null, resultat = null;
+let worker = null, llest = null, fitxer = null;
 const bTrans = $("#b-transcriu"), bCancel = $("#b-cancel"), barra = $("#barra"), pText = $("#p-text");
+const info = $("#info-motor");
 
 const mb = (b) => (b / 1e6).toFixed(0);
 const temps = (s) => (s < 60 ? `${s.toFixed(0)} s` : `${Math.floor(s / 60)} min ${String(Math.round(s % 60)).padStart(2, "0")} s`);
@@ -41,9 +43,12 @@ function preparaMotor() {
       else if (m.tipus === "estat") mostra(m.text);
       else if (m.tipus === "avis") avis = m.text;
       else if (m.tipus === "llest") {
-        $("#info-motor").textContent = `Motor a punt en ${m.segons.toFixed(1)} s · ${m.fils} ${m.fils === 1 ? "fil" : "fils"}` +
-          (m.gpu ? " · GPU" : m.gpuDemanada ? " · sense GPU (el navegador no té WebGPU)" : "") +
-          (m.aillat ? "" : " (el navegador no permet més fils: anirà més lent)") + (avis ? `. ${avis}` : "");
+        console.info("motor a punt", m);            // segons, fils, GPU: detalls tècnics
+        // a la pàgina, només el que l'usuari ha de saber
+        info.textContent = [
+          m.aillat ? "" : "Aquest navegador no deixa fer servir tots els nuclis: anirà més lent.", avis,
+          MOBIL ? "Al mòbil, transcriure tarda aproximadament el que dura el vídeo." : "",
+        ].filter(Boolean).join(" ");
         mostra("Motor a punt.", 1);
         resol(m);
       } else if (m.tipus === "error") rebutja(new Error(m.missatge));
@@ -74,7 +79,7 @@ async function transcriu() {
     const pcm = await llegeixAudio(fitxer);
     const durada = pcm.length / SR;
     const t1 = performance.now();
-    resultat = await new Promise((resol, rebutja) => {
+    const resultat = await new Promise((resol, rebutja) => {
       worker.onmessage = ({ data: m }) => {
         if (m.tipus === "progres") {
           const g = m.fase === "vad" ? 0.03 * m.f : m.fase === "asr" ? 0.03 + 0.92 * m.f : 0.97;
@@ -91,9 +96,8 @@ async function transcriu() {
     mostra(resultat.paraules.length ? `Fet: ${temps(durada)} d'àudio en ${temps(s)}.`
       : "No s'ha trobat veu en aquest fitxer.", 1);
     document.dispatchEvent(new CustomEvent("transcripcio", {
-      detail: { paraules: resultat.paraules, nom: fitxer.name.replace(/\.[^.]+$/, "") },
+      detail: { resultat, nom: fitxer.name.replace(/\.[^.]+$/, "") },
     }));
-    $("#b-json").disabled = false;
     console.info("transcripció", { durada, segons: s, lectura: (t1 - tA) / 1000, total: (performance.now() - t0) / 1000, rtf: s / durada, temps: resultat.temps });
   } catch (e) {
     mostra(`Error: ${e.message}`, 0);
@@ -105,26 +109,21 @@ async function transcriu() {
   }
 }
 
-$("#f-video").addEventListener("change", (e) => {
+$("#f-video").addEventListener("change", async (e) => {
   fitxer = e.target.files[0] || null;
   bTrans.disabled = !fitxer;
-  resultat = null;                        // un fitxer nou: ni el JSON ni el missatge de l'anterior valen
-  $("#b-json").disabled = true;
-  $("#progres").hidden = true;
-  if (fitxer) preparaMotor().catch((err) => mostra(`Error: ${err.message}`, 0));   // es comença a baixar ja
+  $("#progres").hidden = true;            // el missatge del fitxer anterior ja no val
+  if (!fitxer || llest) return;
+  // Si els models ja són al navegador, el motor es prepara mentre l'usuari mira el vídeo. Si no,
+  // no es baixa res (≈ 460 MB) fins que prem «Transcriu».
+  if (await modelsDesats(LOCAL)) preparaMotor().catch((err) => mostra(`Error: ${err.message}`, 0));
+  else info.textContent = "La primera vegada, en prémer «Transcriu» es baixen els models (≈ 460 MB" +
+    (MOBIL ? "; millor amb wifi" : "") + "). Després queden al navegador.";
 });
 bTrans.addEventListener("click", transcriu);
 bCancel.addEventListener("click", () => { atura(); mostra("Cancel·lat.", 0); });
-$("#b-json").addEventListener("click", () => {
-  if (!resultat) return;
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(resultat, null, 1)], { type: "application/json" }));
-  a.download = `${fitxer ? fitxer.name.replace(/\.[^.]+$/, "") : "transcripcio"}.json`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-});
 $("#b-esborra").addEventListener("click", async () => {
   atura();
   await esborraModels();
-  $("#info-motor").textContent = "Models esborrats de la memòria cau.";
+  info.textContent = "Models esborrats del navegador.";
 });
