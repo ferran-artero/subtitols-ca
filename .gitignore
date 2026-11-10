@@ -3,8 +3,6 @@ models_onnx/
 *.onnx
 *.nemo
 resultats/
-docs/
-
 
 # entorns i memòria cau de Python
 venv*/
