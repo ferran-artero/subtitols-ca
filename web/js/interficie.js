@@ -126,7 +126,7 @@ for (const el of [vMida, vFons]) el.addEventListener("change", () => {
 });
 vista();
 
-// ---------------------------------------------------------------- desplegables
+// ---------------------------------------------------------------- desplegables 
 
 function tanca(excepte = null) {
   document.querySelectorAll("[data-menu]").forEach((b) => {

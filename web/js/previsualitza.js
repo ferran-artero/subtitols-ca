@@ -186,7 +186,7 @@ $("#b-desfes").addEventListener("click", () => {
 });
 
 // Cerca i substitueix: paraules senceres (una o diverses de seguides), sense distingir majúscules.
-// Es conserven el signe de darrere i la majúscula inicial del que se substitueix.
+// Es conserven el signe de darrere i la majúscula inicial del que se substitueix. 
 const fCerca = $("#cerca");
 $("#b-cerca").addEventListener("click", () => {
   fCerca.hidden = !fCerca.hidden;
