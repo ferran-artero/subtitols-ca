@@ -88,13 +88,12 @@ async function transcriu() {
       worker.postMessage({ tipus: "transcriu", pcm }, [pcm.buffer]);
     });
     const s = (performance.now() - t1) / 1000;
-    mostra(`Fet: ${temps(durada)} d'àudio en ${temps(s)} (${resultat.paraules.length} paraules; ` +
-      `RTF ${(s / durada).toFixed(2)}; lectura de l'àudio ${((t1 - tA) / 1000).toFixed(1)} s).`, 1);
+    mostra(`Fet: ${temps(durada)} d'àudio en ${temps(s)}.`, 1);
     document.dispatchEvent(new CustomEvent("transcripcio", {
       detail: { paraules: resultat.paraules, nom: fitxer.name.replace(/\.[^.]+$/, "") },
     }));
     $("#b-json").disabled = false;
-    console.info("transcripció", { durada, segons: s, total: (performance.now() - t0) / 1000, rtf: s / durada, temps: resultat.temps });
+    console.info("transcripció", { durada, segons: s, lectura: (t1 - tA) / 1000, total: (performance.now() - t0) / 1000, rtf: s / durada, temps: resultat.temps });
   } catch (e) {
     mostra(`Error: ${e.message}`, 0);
     console.error(e);
@@ -108,6 +107,8 @@ async function transcriu() {
 $("#f-video").addEventListener("change", (e) => {
   fitxer = e.target.files[0] || null;
   bTrans.disabled = !fitxer;
+  resultat = null;                        // un fitxer nou: el JSON de l'anterior ja no val
+  $("#b-json").disabled = true;
   if (fitxer) preparaMotor().catch((err) => mostra(`Error: ${err.message}`, 0));   // es comença a baixar ja
 });
 bTrans.addEventListener("click", transcriu);

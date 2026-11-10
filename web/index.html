@@ -100,6 +100,17 @@
           <button class="boto pla" type="button" id="b-canvia" data-tria="f-video">Canvia</button>
           <button class="boto" type="button" id="b-cancel" hidden>Cancel·la</button>
           <button class="boto prim" type="button" id="b-transcriu" disabled>Transcriu</button>
+          <div class="menu baixa">
+            <button class="boto prim" type="button" data-baixa="srt" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>Baixa SRT</button>
+            <button class="boto prim" type="button" data-menu="m-baixa" aria-haspopup="true" aria-expanded="false" aria-label="Altres formats" title="Altres formats" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <div class="desplegable amunt" id="m-baixa" hidden>
+              <button type="button" data-baixa="vtt"><b>VTT</b> per a la web i YouTube</button>
+              <button type="button" data-baixa="txt"><b>TXT</b> només el text</button>
+              <button type="button" id="b-json" disabled><b>JSON</b> amb el temps de cada paraula</button>
+            </div>
+          </div>
         </div>
         <div id="progres" hidden><progress id="barra" max="1"></progress><div id="p-text" role="status"></div></div>
         <div id="info-motor">La primera vegada es baixen els models (≈ 460 MB); després queden al navegador.</div>
@@ -113,7 +124,7 @@
             <select name="perfil">
               <option value="horitzontal">Horitzontal</option>
               <option value="vertical">Vertical (Reels, TikTok)</option>
-              <option value="accessibilitat">Accessibilitat</option>
+              <option value="accessibilitat">Lectura pausada</option>
             </select></label>
           <label class="camp"><span>Ressalta paraules</span>
             <select name="ressalta">
@@ -143,27 +154,22 @@
             <label class="camp"><span>Durada màxima <small>(s)</small></span><input type="number" name="durada_max" min="1" max="15" step="0.5" inputmode="decimal"></label>
             <label class="camp"><span>Desfasament <small>(s)</small></span><input type="number" name="desfas" min="-1" max="1" step="0.02"></label>
           </div>
+          <p class="apartat">Aspecte a la previsualització <small>(no va al fitxer: l'estil es posa a l'editor de vídeo)</small></p>
+          <div class="graella">
+            <label class="camp"><span>Mida de la lletra</span>
+              <select id="v-mida"><option value="0.8">Petita</option><option value="1" selected>Normal</option><option value="1.25">Gran</option></select></label>
+            <label class="camp"><span>Fons del text</span>
+              <select id="v-fons"><option value="si" selected>Caixa negra</option><option value="no">Sense fons</option></select></label>
+          </div>
         </details>
       </form>
 
-      <h2>Subtítols <span id="nombre"></span></h2>
+      <h2>Subtítols <span id="nombre"></span>
+        <button type="button" id="b-desfes" hidden>Desfés la correcció</button></h2>
+      <div id="avisos"></div>
+      <div id="estat"></div>
       <div id="llista"></div>
 
-      <div class="peu">
-        <div id="avisos"></div>
-        <div id="estat"></div>
-        <div class="menu baixa">
-          <button class="boto prim" type="button" data-baixa="srt" disabled>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>Baixa SRT</button>
-          <button class="boto prim" type="button" data-menu="m-baixa" aria-haspopup="true" aria-expanded="false" aria-label="Altres formats" title="Altres formats" disabled>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-          <div class="desplegable amunt" id="m-baixa" hidden>
-            <button type="button" data-baixa="vtt"><b>VTT</b> per a la web i YouTube</button>
-            <button type="button" data-baixa="txt"><b>TXT</b> només el text</button>
-            <button type="button" id="b-json" disabled><b>JSON</b> amb el temps de cada paraula</button>
-          </div>
-        </div>
-      </div>
     </aside>
   </section>
 </main>

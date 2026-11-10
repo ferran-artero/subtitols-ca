@@ -10,6 +10,7 @@ const form = $("#params"), video = $("#video"), capa = $("#capa"), llista = $("#
 const CLAU = "subtitols-ca.params";
 
 let paraules = null, nomBase = "subtitols", P = null, cues = [], finals = [], actiu = -1;
+const desfets = [];                       // correccions fetes, per a desfer-les
 
 // ---------------------------------------------------------------- paràmetres
 
@@ -47,11 +48,9 @@ function recalcula() {
   P = llig();
   desa();
   if (!paraules) return;
-  const t0 = performance.now();
   cues = S.segmenta(paraules, P);
   finals = S.expandeix(cues, P);
-  const ms = performance.now() - t0;
-  $("#estat").textContent = `${paraules.length} paraules · ${cues.length} subtítols · calculat en ${ms.toFixed(0)} ms`;
+  $("#estat").textContent = "";
   $("#avisos").textContent = [...S.avisos(P, "srt")].join(" ");
   pintaLlista();
   actiu = -1;
@@ -74,17 +73,15 @@ function fmt(s) {
 
 function pintaLlista() {
   $("#nombre").textContent = `(${cues.length})`;
+  $("#b-desfes").hidden = !desfets.length;
   const frag = document.createDocumentFragment();
   cues.forEach((c, i) => {
     const d = document.createElement("div");
     d.className = "sub";
     d.dataset.i = i;
-    const car = S.text(c).replace("\n", " ").length, dur = c.fi - c.ini, cps = car / dur;
-    const avis = [];
-    if (cps > P.max_cps + 1e-9) avis.push(`${cps.toFixed(0)} car/s`);
-    if (i + 1 < cues.length && S.esFuncional(c.paraules[c.paraules.length - 1])) avis.push("tall darrere de paraula funcional");
-    d.innerHTML = `<small>${fmt(c.ini)} → ${fmt(c.fi)}${avis.length ? " · <b>" + avis.join(" · ") + "</b>" : ""}</small>`;
-    d.append(S.text(c));
+    d.innerHTML = `<small>${fmt(c.ini)} → ${fmt(c.fi)}</small><span class="text"></span>` +
+      `<button type="button" class="llapis" aria-label="Corregeix aquest subtítol" title="Corregeix">${LLAPIS}</button>`;
+    d.children[1].textContent = S.text(c);
     frag.append(d);
   });
   llista.replaceChildren(frag);
@@ -92,7 +89,77 @@ function pintaLlista() {
 
 llista.addEventListener("click", (e) => {
   const d = e.target.closest(".sub");
-  if (d && video.src) { video.currentTime = cues[+d.dataset.i].ini + 0.001; video.play(); }
+  if (!d || d.classList.contains("editant")) return;
+  if (e.target.closest(".llapis")) edita(d);
+  else if (video.src) { video.currentTime = cues[+d.dataset.i].ini + 0.001; video.play(); }
+});
+
+// ---------------------------------------------------------------- correccions
+
+// Es corregeix la llista de paraules, no el text del subtítol: així les correccions es mantenen
+// quan es canvia un paràmetre i es torna a segmentar.
+const LLAPIS = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4"/></svg>`;
+const SIGNES = ".,?!:;…";
+
+/** Text corregit d'un subtítol -> paraules. Amb les mateixes paraules, cadascuna conserva els seus
+ *  temps; si n'hi ha més o menys, el temps del subtítol es reparteix segons els caràcters. */
+function paraulesNoves(text, velles) {
+  const noves = [];
+  for (const tros of text.split(/\s+/).filter(Boolean)) {
+    const punt = SIGNES.includes(tros.at(-1)) ? tros.at(-1) : "";
+    const t = punt ? tros.slice(0, -1) : tros;
+    if (t) noves.push({ text: t, punt: punt || null });
+    else if (noves.length) noves.at(-1).punt = punt;         // un signe solt va amb la paraula d'abans
+  }
+  if (noves.length === velles.length) {
+    return noves.map((n, k) => (n.text === velles[k].text && (n.punt || "") === (velles[k].punt || "")
+      ? velles[k] : { ...velles[k], ...n, corregida: true }));
+  }
+  const a = velles[0].ini, b = velles.at(-1).fi;
+  const pes = noves.map((n) => [...n.text].length + 1), total = pes.reduce((x, y) => x + y, 0);
+  let t = a;
+  return noves.map((n, k) => {
+    const ini = t;
+    t += (b - a) * pes[k] / total;
+    return { ...n, ini: +ini.toFixed(3), fi: +(k === noves.length - 1 ? b : t).toFixed(3), corregida: true };
+  });
+}
+
+function edita(d) {
+  const c = cues[+d.dataset.i], caixa = d.querySelector(".text"), abans = caixa.textContent;
+  video.pause();
+  d.classList.add("editant");
+  caixa.contentEditable = "plaintext-only";
+  if (caixa.contentEditable !== "plaintext-only") caixa.contentEditable = "true";
+  caixa.focus();
+  getSelection().selectAllChildren(caixa);
+  getSelection().collapseToEnd();
+  let fet = false;
+  const acaba = (desa) => {
+    if (fet) return;
+    fet = true;
+    caixa.removeEventListener("keydown", tecla);
+    const text = caixa.innerText.trim();
+    caixa.contentEditable = "false";
+    d.classList.remove("editant");
+    if (!desa || text.replace(/\s+/g, " ") === abans.replace(/\s+/g, " ")) { caixa.textContent = abans; return; }
+    const i = paraules.indexOf(c.paraules[0]), noves = paraulesNoves(text, c.paraules);
+    desfets.push({ i, noves, velles: paraules.splice(i, c.paraules.length, ...noves) });
+    recalcula();
+  };
+  const tecla = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); acaba(true); }
+    else if (e.key === "Escape") acaba(false);
+  };
+  caixa.addEventListener("keydown", tecla);
+  caixa.addEventListener("blur", () => acaba(true), { once: true });
+}
+
+$("#b-desfes").addEventListener("click", () => {
+  const u = desfets.pop();
+  if (!u) return;
+  paraules.splice(u.i, u.noves.length, ...u.velles);
+  recalcula();
 });
 
 // ---------------------------------------------------------------- capa sobre el vídeo
@@ -145,7 +212,14 @@ function pintaCapa() {
   const c = i >= 0 ? cues.indexOf(finals[i].cue) : -1;
   llista.querySelector(".sub.actiu")?.classList.remove("actiu");
   const d = c >= 0 ? llista.children[c] : null;
-  if (d) { d.classList.add("actiu"); if (!video.paused) d.scrollIntoView({ block: "nearest" }); }
+  if (d) {
+    d.classList.add("actiu");
+    if (!video.paused && !llista.querySelector(".editant")) {   // es mou la llista, mai la pàgina
+      const r = d.getBoundingClientRect(), R = llista.getBoundingClientRect();
+      if (r.top < R.top) llista.scrollTop -= R.top - r.top + 8;
+      else if (r.bottom > R.bottom) llista.scrollTop += r.bottom - R.bottom + 8;
+    }
+  }
 }
 
 function bucle() {
@@ -169,6 +243,7 @@ video.addEventListener("seeked", pintaCapa);
 $("#f-video").addEventListener("change", (e) => {
   const f = e.target.files[0];
   if (!f) return;
+  if (!video.hidden) neteja();            // un altre vídeo: els subtítols de l'anterior ja no valen
   video.src = URL.createObjectURL(f);
   video.hidden = false;
   $("#buit").hidden = true;
@@ -183,16 +258,26 @@ $("#f-json").addEventListener("change", async (e) => {
     if (!Array.isArray(d.paraules)) throw new Error("no té el camp «paraules»");
     paraules = d.paraules;
     nomBase = f.name.replace(/\.json$/i, "");
+    desfets.length = 0;
     recalcula();
   } catch (err) {
     $("#estat").textContent = `No he pogut llegir el JSON: ${err.message}`;
   }
 });
 
+function neteja() {
+  paraules = null; cues = []; finals = []; actiu = -1; desfets.length = 0;
+  capa.innerHTML = "";
+  $("#estat").textContent = "";
+  pintaLlista();
+  $("#nombre").textContent = "";
+}
+
 // transcripció feta al navegador (transcriu.js)
 document.addEventListener("transcripcio", (e) => {
   paraules = e.detail.paraules;
   nomBase = e.detail.nom;
+  desfets.length = 0;
   recalcula();
 });
 

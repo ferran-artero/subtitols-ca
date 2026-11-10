@@ -82,10 +82,15 @@ addEventListener("drop", (e) => {
 
 const mida = (b) => (b < 1e6 ? `${Math.max(1, Math.round(b / 1e3))} kB` : b < 1e9 ? `${(b / 1e6).toFixed(b < 1e7 ? 1 : 0)} MB` : `${(b / 1e9).toFixed(2)} GB`);
 
+// Estats: "inici" (cap fitxer), "taller" (fitxer triat: botó «Transcriu») i "fet" (hi ha
+// subtítols: el botó passa a ser «Baixa»).
+let hiHaVideo = false;
 fVideo.addEventListener("change", () => {
   const f = fVideo.files[0];
   if (!f) return;
-  cos.dataset.estat = "taller";
+  // afegir el vídeo a una transcripció carregada no la descarta; canviar de vídeo, sí
+  cos.dataset.estat = cos.dataset.estat === "fet" && !hiHaVideo ? "fet" : "taller";
+  hiHaVideo = true;
   $("#nom-fitxer").textContent = f.name;
   $("#mida-fitxer").textContent = mida(f.size);
   $("#escena").classList.toggle("audio", f.type.startsWith("audio/"));
@@ -93,9 +98,11 @@ fVideo.addEventListener("change", () => {
 fJson.addEventListener("change", () => {
   const f = fJson.files[0];
   if (!f) return;
-  cos.dataset.estat = "taller";
+  cos.dataset.estat = "fet";
   if (!fVideo.files[0]) { $("#nom-fitxer").textContent = f.name; $("#mida-fitxer").textContent = "Transcripció carregada"; }
 });
+
+document.addEventListener("transcripcio", () => { cos.dataset.estat = "fet"; });
 
 // mentre es transcriu no es pot canviar de fitxer (transcriu.js mostra «Cancel·la» mentre dura)
 new MutationObserver(() => { $("#b-canvia").disabled = ocupat(); })
@@ -110,6 +117,24 @@ new MutationObserver(() => { baixades.forEach((b) => { b.disabled = !llista.chil
 const marques = () => { form.toggleAttribute("data-ressalta", !!form.ressalta.value); };
 form.addEventListener("input", marques);
 marques();
+
+// ---------------------------------------------------------------- aspecte de la previsualització
+
+const CLAU_VISTA = "subtitols-ca.vista", vMida = $("#v-mida"), vFons = $("#v-fons");
+function vista() {
+  $("#capa").style.setProperty("--escala", vMida.value);
+  $("#capa").classList.toggle("sense-fons", vFons.value === "no");
+}
+try {
+  const v = JSON.parse(localStorage.getItem(CLAU_VISTA) || "{}");
+  if (v.mida) vMida.value = v.mida;
+  if (v.fons) vFons.value = v.fons;
+} catch { /* sense memòria */ }
+for (const el of [vMida, vFons]) el.addEventListener("change", () => {
+  vista();
+  try { localStorage.setItem(CLAU_VISTA, JSON.stringify({ mida: vMida.value, fons: vFons.value })); } catch { /* sense memòria */ }
+});
+vista();
 
 // ---------------------------------------------------------------- desplegables
 

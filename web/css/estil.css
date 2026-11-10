@@ -133,7 +133,9 @@ body[data-estat="inici"] #taller, body:not([data-estat="inici"]) #inici { displa
 #capa.vertical { bottom: 28%; }
 #escena.audio #capa { bottom: 45%; }
 #capa span.linia { display: inline; background: rgba(0, 0, 0, .72); color: #fff; padding: .08em .3em;
-                   line-height: 1.45; font-weight: 600; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+                   font-size: calc(1em * var(--escala, 1)); line-height: 1.45; font-weight: 600; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+#capa.sense-fons span.linia { background: none; font-weight: 700;
+                              text-shadow: 0 0 .12em #000, 0 0 .12em #000, 0 .06em .25em rgba(0, 0, 0, .9); }
 #buit { color: #b9b9b6; padding: 56px 20px; text-align: center; }
 #buit p { margin: 0 0 14px; }
 #buit .boto { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .25); color: #fff; }
@@ -201,28 +203,41 @@ input[type="color"]::-moz-color-swatch { border: 0; }
 .graella { padding: 4px 0 14px; }
 
 .panell h2 { margin: 0; padding: 14px 16px 6px; font-size: 13px; font-weight: 600; color: var(--text2);
-             letter-spacing: .01em; }
+             letter-spacing: .01em; display: flex; align-items: baseline; gap: 6px; }
+#b-desfes { margin-left: auto; padding: 0; border: 0; background: none; cursor: pointer; font-size: 12.5px;
+            font-weight: 500; color: var(--accent-text); }
+#b-desfes:hover { text-decoration: underline; }
+.apartat { margin: 4px 0 6px; font-size: 12.5px; font-weight: 600; color: var(--text2); }
 #nombre { color: var(--suau); font-weight: 400; }
 #llista { flex: 1; min-height: 0; overflow: auto; padding: 0 8px 8px; overscroll-behavior: contain; }
 #llista:empty::before { content: "Els subtítols apareixeran ací quan acabe la transcripció.";
                         display: block; padding: 28px 24px; text-align: center; color: var(--suau); font-size: 14px; }
-.sub { padding: 8px 10px 8px 12px; border-radius: 9px; cursor: pointer; white-space: pre-line; font-size: 14.5px;
+.sub { padding: 8px 40px 8px 12px; border-radius: 9px; cursor: pointer; white-space: pre-line; font-size: 14.5px;
        line-height: 1.4; position: relative; }
 .sub:hover { background: var(--enfonsat); }
 .sub.actiu { background: var(--accent-clar); }
 .sub.actiu::before { content: ""; position: absolute; left: 2px; top: 9px; bottom: 9px; width: 3px;
                      border-radius: 3px; background: var(--accent); }
 .sub small { display: block; margin-bottom: 1px; font-size: 12px; font-variant-numeric: tabular-nums; }
-.sub small b { color: var(--avis); font-weight: 500; }
+.sub .text { display: block; border-radius: 6px; outline: 0; }
+.sub.editant { background: var(--panell); box-shadow: inset 0 0 0 1.5px var(--accent); cursor: text; }
+.llapis { position: absolute; right: 6px; top: 50%; translate: 0 -50%; width: 30px; height: 30px; display: grid;
+          place-items: center; border: 0; border-radius: 8px; background: none; color: var(--suau); cursor: pointer;
+          opacity: 0; }
+.llapis svg { width: 16px; height: 16px; }
+.sub:hover .llapis, .llapis:focus-visible { opacity: 1; }
+.llapis:hover { background: var(--vora); color: var(--text); }
+.sub.editant .llapis { display: none; }
+@media (hover: none) { .llapis { opacity: .7; } }
 
-.peu { flex: none; padding: 12px 16px 16px; border-top: 1px solid var(--vora); background: var(--panell); }
-#avisos { color: var(--avis); font-size: 12.5px; }
-#estat { color: var(--suau); font-size: 12.5px; min-height: 1.5em; margin-bottom: 8px; font-variant-numeric: tabular-nums; }
-#avisos:empty { display: none; }
+#avisos, #estat { padding: 0 16px 6px; font-size: 12.5px; color: var(--avis); }
+#avisos:empty, #estat:empty { display: none; }
+
+/* el botó principal: «Transcriu» fins que hi ha subtítols; després, «Baixa» */
 .baixa { display: flex; gap: 1px; }
-.baixa > .boto:first-child { flex: 1; border-radius: 10px 0 0 10px; min-height: 44px; }
-.baixa > .boto:nth-child(2) { border-radius: 0 10px 10px 0; padding: 0 13px; min-height: 44px; }
-.baixa .desplegable { left: 0; }
+.baixa > .boto:first-child { border-radius: 10px 0 0 10px; }
+.baixa > .boto:nth-child(2) { border-radius: 0 10px 10px 0; padding: 0 12px; }
+body[data-estat="fet"] #b-transcriu, body:not([data-estat="fet"]) .baixa { display: none; }
 
 /* ---------------------------------------------------------------- peu, capa de soltar i nota */
 
@@ -250,8 +265,6 @@ footer a { color: inherit; }
   .panell { position: static; height: auto; min-height: 0; overflow: visible; }
   #params { max-height: none; overflow: visible; }
   #llista { max-height: 52vh; max-height: 52dvh; flex: none; }
-  .peu { position: sticky; bottom: 0; border-radius: 0 0 var(--radi) var(--radi);
-         padding-bottom: max(16px, env(safe-area-inset-bottom)); }
   .fets { grid-template-columns: 1fr; gap: 14px; max-width: 420px; margin-inline: auto; }
 }
 @media (max-width: 560px) {
@@ -267,7 +280,9 @@ footer a { color: inherit; }
   .fitxer { flex-wrap: wrap; }
   .fitxer > svg { display: none; }
   .nom { flex-basis: calc(100% - 100px); }
-  #b-transcriu { flex: 1 1 100%; order: 5; }
+  #b-transcriu, .baixa { flex: 1 1 100%; order: 5; }
+  .baixa > .boto:first-child { flex: 1; }
+  .baixa .desplegable { top: calc(100% + 6px); bottom: auto; }
   #b-cancel { order: 4; }
   .sub { font-size: 15.5px; padding-block: 10px; }
   .desplegable { min-width: min(280px, calc(100vw - 32px)); }
