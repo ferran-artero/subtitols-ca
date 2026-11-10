@@ -4,6 +4,7 @@
 // Previsualització: vídeo + JSON del motor -> subtítols segmentats en temps real.
 // Cada canvi de paràmetre només torna a executar segmenta() (uns ms); no es transcriu de nou.
 import * as S from "./subtitols.js";
+import { nota } from "./interficie.js";
 
 const $ = (s) => document.querySelector(s);
 const form = $("#params"), video = $("#video"), capa = $("#capa"), llista = $("#llista");
@@ -50,7 +51,6 @@ function recalcula() {
   if (!paraules) return;
   cues = S.segmenta(paraules, P);
   finals = S.expandeix(cues, P);
-  $("#estat").textContent = "";
   $("#avisos").textContent = [...S.avisos(P, "srt")].join(" ");
   pintaLlista();
   actiu = -1;
@@ -72,7 +72,7 @@ function fmt(s) {
 }
 
 function pintaLlista() {
-  $("#nombre").textContent = `(${cues.length})`;
+  $("#nombre").textContent = cues.length ? `(${cues.length})` : "";
   $("#b-desfes").hidden = !desfets.length;
   const frag = document.createDocumentFragment();
   cues.forEach((c, i) => {
@@ -85,6 +85,7 @@ function pintaLlista() {
     frag.append(d);
   });
   llista.replaceChildren(frag);
+  document.dispatchEvent(new CustomEvent("subtitols", { detail: cues.length }));   // per a interficie.js
 }
 
 llista.addEventListener("click", (e) => {
@@ -261,16 +262,15 @@ $("#f-json").addEventListener("change", async (e) => {
     desfets.length = 0;
     recalcula();
   } catch (err) {
-    $("#estat").textContent = `No he pogut llegir el JSON: ${err.message}`;
+    nota(`No he pogut llegir el JSON: ${err.message}`);
   }
 });
 
 function neteja() {
   paraules = null; cues = []; finals = []; actiu = -1; desfets.length = 0;
   capa.innerHTML = "";
-  $("#estat").textContent = "";
+  $("#avisos").textContent = "";
   pintaLlista();
-  $("#nombre").textContent = "";
 }
 
 // transcripció feta al navegador (transcriu.js)

@@ -1,37 +1,25 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 Ferran Artero Merino — vegeu NOTICE
 //
-// Interfície: tema clar o fosc, triar o arrossegar el fitxer, desplegables i estat de la pàgina.
+// Interfície: tema clar o fosc, triar o arrossegar el fitxer, estat de la pàgina i desplegables.
 // No transcriu ni segmenta: posa el fitxer a #f-video o #f-json i envia "change", que és el que
 // escolten transcriu.js i previsualitza.js.
 
 const $ = (s) => document.querySelector(s);
 const arrel = document.documentElement, cos = document.body;
-const fVideo = $("#f-video"), fJson = $("#f-json"), llista = $("#llista"), form = $("#params");
+const fVideo = $("#f-video"), fJson = $("#f-json"), form = $("#params"), capa = $("#capa");
 
-// ---------------------------------------------------------------- tema
+/** Llig i desa a la memòria del navegador (si n'hi ha). */
+const memoria = {
+  llig(clau) { try { return localStorage.getItem(clau); } catch { return null; } },
+  desa(clau, valor) {
+    try { if (valor === null) localStorage.removeItem(clau); else localStorage.setItem(clau, valor); } catch { /* sense memòria */ }
+  },
+};
 
-const CLAU_TEMA = "subtitols-ca.tema";
-const sistemaFosc = matchMedia("(prefers-color-scheme: dark)");
-const temaSistema = () => (sistemaFosc.matches ? "fosc" : "clar");
-
-$("#b-tema").addEventListener("click", () => {
-  const nou = arrel.dataset.tema === "fosc" ? "clar" : "fosc";
-  arrel.dataset.tema = nou;
-  try {                                   // si coincideix amb el sistema, no es desa: el seguirà
-    if (nou === temaSistema()) localStorage.removeItem(CLAU_TEMA); else localStorage.setItem(CLAU_TEMA, nou);
-  } catch { /* sense memòria */ }
-});
-sistemaFosc.addEventListener("change", () => {
-  let desat = null;
-  try { desat = localStorage.getItem(CLAU_TEMA); } catch { /* sense memòria */ }
-  if (!desat) arrel.dataset.tema = temaSistema();
-});
-
-// ---------------------------------------------------------------- nota breu
-
+/** Missatge breu a baix de la pantalla. */
 let esperaNota;
-function nota(text) {
+export function nota(text) {
   const n = $("#nota");
   n.textContent = text;
   n.hidden = false;
@@ -39,12 +27,29 @@ function nota(text) {
   esperaNota = setTimeout(() => { n.hidden = true; }, 4000);
 }
 
+// ---------------------------------------------------------------- tema
+
+// El tema inicial el posa index.html abans de pintar la pàgina. Si el que tria l'usuari coincideix
+// amb el del sistema, no es desa: així el continua seguint.
+const CLAU_TEMA = "subtitols-ca.tema";
+const sistemaFosc = matchMedia("(prefers-color-scheme: dark)");
+const temaSistema = () => (sistemaFosc.matches ? "fosc" : "clar");
+
+$("#b-tema").addEventListener("click", () => {
+  const nou = arrel.dataset.tema === "fosc" ? "clar" : "fosc";
+  arrel.dataset.tema = nou;
+  memoria.desa(CLAU_TEMA, nou === temaSistema() ? null : nou);
+});
+sistemaFosc.addEventListener("change", () => {
+  if (!memoria.llig(CLAU_TEMA)) arrel.dataset.tema = temaSistema();
+});
+
 // ---------------------------------------------------------------- fitxers: triar i arrossegar
 
 const EXT_MEDIA = /\.(mp4|m4v|mov|webm|mkv|avi|mp3|m4a|aac|wav|flac|ogg|oga|opus)$/i;
 const esJson = (f) => /\.json$/i.test(f.name) || f.type === "application/json";
 const esMedia = (f) => /^(video|audio)\//.test(f.type) || EXT_MEDIA.test(f.name);
-const ocupat = () => !$("#b-cancel").hidden;          // s'està transcrivint
+const ocupat = () => !$("#b-cancel").hidden;          // transcriu.js mostra «Cancel·la» mentre transcriu
 
 document.querySelectorAll("[data-tria]").forEach((b) =>
   b.addEventListener("click", () => $(`#${b.dataset.tria}`).click()));
@@ -61,7 +66,7 @@ function rep(fitxer) {
   if (!fitxer) return;
   if (esJson(fitxer)) posa(fJson, fitxer);
   else if (!esMedia(fitxer)) nota("Aquest fitxer no és ni un vídeo ni un àudio.");
-  else if (ocupat()) nota("Espera que acabe la transcripció o cancel·la-la abans de canviar de fitxer.");
+  else if (ocupat()) nota("Espera que acabi la transcripció o cancel·la-la abans de canviar de fitxer.");
   else posa(fVideo, fitxer);
 }
 
@@ -80,41 +85,27 @@ addEventListener("drop", (e) => {
 
 // ---------------------------------------------------------------- estat de la pàgina
 
+// body[data-estat]: "inici" (cap fitxer), "taller" (fitxer triat: botó «Transcriu») i "fet" (hi ha
+// subtítols: el botó passa a ser «Baixa»). previsualitza.js avisa amb "subtitols" cada vegada que
+// pinta la llista (detail = nombre de subtítols).
 const mida = (b) => (b < 1e6 ? `${Math.max(1, Math.round(b / 1e3))} kB` : b < 1e9 ? `${(b / 1e6).toFixed(b < 1e7 ? 1 : 0)} MB` : `${(b / 1e9).toFixed(2)} GB`);
+const fitxa = (nom, detall) => { $("#nom-fitxer").textContent = nom; $("#mida-fitxer").textContent = detall; };
 
-// Estats: "inici" (cap fitxer), "taller" (fitxer triat: botó «Transcriu») i "fet" (hi ha
-// subtítols: el botó passa a ser «Baixa»).
-let hiHaVideo = false;
+document.addEventListener("subtitols", (e) => { cos.dataset.estat = e.detail ? "fet" : "taller"; });
 fVideo.addEventListener("change", () => {
   const f = fVideo.files[0];
   if (!f) return;
-  // afegir el vídeo a una transcripció carregada no la descarta; canviar de vídeo, sí
-  cos.dataset.estat = cos.dataset.estat === "fet" && !hiHaVideo ? "fet" : "taller";
-  hiHaVideo = true;
-  $("#nom-fitxer").textContent = f.name;
-  $("#mida-fitxer").textContent = mida(f.size);
+  if (cos.dataset.estat === "inici") cos.dataset.estat = "taller";
+  fitxa(f.name, mida(f.size));
   $("#escena").classList.toggle("audio", f.type.startsWith("audio/"));
 });
 fJson.addEventListener("change", () => {
   const f = fJson.files[0];
-  if (!f) return;
-  cos.dataset.estat = "fet";
-  if (!fVideo.files[0]) { $("#nom-fitxer").textContent = f.name; $("#mida-fitxer").textContent = "Transcripció carregada"; }
+  if (f && !fVideo.files[0]) fitxa(f.name, "Transcripció carregada");
 });
 
-document.addEventListener("transcripcio", () => { cos.dataset.estat = "fet"; });
-
-// mentre es transcriu no es pot canviar de fitxer (transcriu.js mostra «Cancel·la» mentre dura)
-new MutationObserver(() => { $("#b-canvia").disabled = ocupat(); })
-  .observe($("#b-cancel"), { attributes: true, attributeFilter: ["hidden"] });
-
-// les baixades s'activen quan hi ha subtítols a la llista
-const baixades = document.querySelectorAll(".baixa [data-baixa], .baixa [data-menu]");
-new MutationObserver(() => { baixades.forEach((b) => { b.disabled = !llista.children.length; }); })
-  .observe(llista, { childList: true });
-
 // les marques del ressaltat només es mostren si hi ha ressaltat
-const marques = () => { form.toggleAttribute("data-ressalta", !!form.ressalta.value); };
+const marques = () => form.toggleAttribute("data-ressalta", !!form.ressalta.value);
 form.addEventListener("input", marques);
 marques();
 
@@ -122,17 +113,17 @@ marques();
 
 const CLAU_VISTA = "subtitols-ca.vista", vMida = $("#v-mida"), vFons = $("#v-fons");
 function vista() {
-  $("#capa").style.setProperty("--escala", vMida.value);
-  $("#capa").classList.toggle("sense-fons", vFons.value === "no");
+  capa.style.setProperty("--escala", vMida.value);
+  capa.classList.toggle("sense-fons", vFons.value === "no");
 }
 try {
-  const v = JSON.parse(localStorage.getItem(CLAU_VISTA) || "{}");
+  const v = JSON.parse(memoria.llig(CLAU_VISTA) || "{}");
   if (v.mida) vMida.value = v.mida;
   if (v.fons) vFons.value = v.fons;
-} catch { /* sense memòria */ }
+} catch { /* dades desades malmeses */ }
 for (const el of [vMida, vFons]) el.addEventListener("change", () => {
   vista();
-  try { localStorage.setItem(CLAU_VISTA, JSON.stringify({ mida: vMida.value, fons: vFons.value })); } catch { /* sense memòria */ }
+  memoria.desa(CLAU_VISTA, JSON.stringify({ mida: vMida.value, fons: vFons.value }));
 });
 vista();
 

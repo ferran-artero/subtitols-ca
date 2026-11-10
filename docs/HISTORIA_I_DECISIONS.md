@@ -1,6 +1,6 @@
 # Subtitulador català al navegador — història, decisions i passos pendents
 
-*Ferran Artero Merino · beca ValgrAI (VRAIN-UPV) · estat a 9 de novembre de 2026*
+*Ferran Artero Merino · beca ValgrAI (VRAIN-UPV) · estat a 10 de novembre de 2026*
 
 Aquest document explica tot el procés fins ara: quin problema volem resoldre, què hem fet, quins
 problemes hem trobat, com els hem resolt, per què hem pres cada decisió i què queda per fer.
@@ -135,7 +135,7 @@ Abans de les respostes vam preparar un pla B: entrenar el nostre propi puntuador
 | 3 | Motor en JavaScript al navegador + decisió de viabilitat | ✅ (PC i Android; falta un iPhone) |
 | 4 | Publicar els models a Hugging Face | ✅ |
 | 5 | Segmentació i format dels subtítols | ✅ (feta abans de la 3) |
-| 6 | Interfície web | pendent |
+| 6 | Interfície web | en curs (disseny i correcció de subtítols fets el 10/11) |
 | 7 | Robustesa (vídeos llargs, mòbils, errors) | pendent |
 | 8 | Proves automàtiques | pendent |
 | 9 | Versió 1.0 | pendent |
@@ -626,6 +626,53 @@ de 25 s:
 - La pàgina mostra el temps de preparació del motor i, en acabar, l'RTF: per a mesurar no cal
   cronometrar.
 
+### 10.8 Fase 6 — Interfície (10 de novembre)
+
+Fins ara la pàgina era una eina de proves: tres columnes amb tots els paràmetres a la vista. El
+10 de novembre es va fer el disseny per a l'usuari final, per a ordinador i mòbil alhora.
+
+**Decisions de disseny:**
+
+| Decisió | Per què |
+|---|---|
+| Paleta de la UPV: barra `#3F4444`, accent `#D73333`, text `#111111`, secundari `#5B5B5B`, fons blanc trencat `#F5F3EE` | Identitat del projecte (beca a VRAIN-UPV); el vermell només per a l'acció principal |
+| Tema clar i fosc: segueix el sistema i un botó el canvia i el recorda | Demanat; el tema es posa abans de pintar la pàgina perquè no faça cap llampec |
+| Font Inter, servida des del repositori (`web/fonts/`, 48 kB, llicència OFL) | Clara i moderna; des del mateix origen perquè la pàgina no demane res a tercers (promesa de privacitat) |
+| Dues pantalles: inici (zona per a arrossegar o triar el fitxer) i taller (vídeo + panell) | A l'inici només hi ha una cosa a fer; els paràmetres no apareixen fins que hi ha fitxer |
+| Un sol botó principal que canvia: «Transcriu» → «Cancel·la» → «Baixa SRT» (amb un desplegable per a VTT, TXT i JSON) | Després de transcriure, «Transcriu» ja no serveix; al mòbil el botó de baixar quedava massa avall |
+| Al panell, «Format» i «Ressalta paraules» sempre visibles; la resta, plegada a «Més ajustos» | Són les dues úniques opcions que la majoria tocarà |
+| Fora els avisos de la llista («23 car/s», «tall darrere de paraula funcional») i els textos tècnics (RTF, «calculat en 4 ms») | Eren diagnòstics per a nosaltres; l'RTF continua eixint a la consola |
+| El perfil «Accessibilitat» es diu «Lectura pausada» a la pàgina | Diu el que fa (línies més curtes i més temps de lectura); per dins continua sent `accessibilitat` |
+| La mida de la lletra i el fons del text són ajustos **de la previsualització** | L'SRT no guarda estil; la pàgina ho diu perquè ningú espere trobar-ho a l'editor |
+| Mentre el vídeo es reprodueix, només es desplaça la llista, mai la pàgina | Al mòbil, `scrollIntoView` movia tota la pantalla |
+| Textos de la pàgina amb formes generals («aquí», «surt», «afegeix») | Preferència de l'autor per a la interfície |
+
+**Correcció dels subtítols (primera versió de l'editor).** Cada subtítol té un llapis: s'edita el
+text i es desa amb Retorn (Esc cancel·la). Segueix el disseny acordat: es corregeix la llista de
+paraules, no el subtítol, i per això les correccions es mantenen en canviar de format. Amb el
+mateix nombre de paraules cada una conserva els seus temps; si canvia, el temps del subtítol es
+reparteix segons els caràcters. Hi ha «Desfés la correcció», i al JSON les paraules corregides
+porten `corregida: true` (el camp `text` de dalt es queda amb l'original).
+
+**Organització del codi** (`web/`): `css/estil.css`; `js/interficie.js` (tema, arrossegar, estat
+de la pàgina, desplegables); `js/transcriu.js` (motor i progrés); `js/previsualitza.js`
+(segmentació en viu, capa sobre el vídeo, llista i correccions). L'estat de la pàgina és
+`body[data-estat]` (`inici`, `taller`, `fet`): `previsualitza.js` envia l'esdeveniment
+`subtitols` cada vegada que pinta la llista i `interficie.js` canvia l'estat; el CSS mostra el
+botó que toca. Arrossegar un fitxer el posa a l'`<input>` i envia `change`, de manera que hi ha
+un sol camí d'entrada.
+
+**Descartat de moment:** exportar el vídeo amb els subtítols gravats (cal recodificar el vídeo al
+navegador i un editor d'estil complet: després de la 1.0; el pas intermedi és exportar ASS) i el
+botó d'enviar les correccions per a reentrenar el model.
+
+**Comprovat:** amb una transcripció simulada, a 1440 px i a 390 px, en clar i en fosc, tot el
+flux (triar, estat dels botons, corregir, desfer, canviar de fitxer) sense errors. La
+transcripció real amb la interfície nova l'ha provada l'autor al seu PC.
+
+**Noms proposats per a l'eina** (sense decidir): Mot a mot, Al peu de la lletra, Dit i fet,
+Retola, Xerra/Xarra.
+
 ## 11. Passos pendents, en detall
 
 ### Fase 3 — El que queda
@@ -639,8 +686,13 @@ de 25 s:
 
 ### Fase 6 — Interfície i editor
 
-- Pujar el fitxer (o arrossegar-lo), barra de progrés, previsualització del vídeo amb els
-  subtítols i botó de descàrrega.
+- ✅ Pujar el fitxer (o arrossegar-lo), barra de progrés, previsualització del vídeo amb els
+  subtítols, botó de descàrrega, «ressalta cada paraula» i correcció de cada subtítol (10/11,
+  secció 10.8).
+- **Queda de l'editor:** clic en una paraula per a saltar al vídeo, buscar i substituir, i
+  actualitzar el camp `text` del JSON amb les correccions.
+- **Queda de la interfície:** triar el nom de l'eina; decidir si el format es tria sol segons el
+  vídeo (vertical → perfil vertical); provar-la en un iPhone.
 - **Formats:**
   - SRT i VTT;
   - TXT;
@@ -721,3 +773,6 @@ de 25 s:
 - [ ] Comprovar la correcció de l'MP4 (`mp4.js`) a Firefox i Safari.
 - [ ] Avisar al mòbil que pot tardar més o menys la durada del vídeo (fase 6).
 - [ ] Provar `<b>`, `<i>` i colors a CapCut amb un SRT fet per la pàgina.
+- [ ] `.gitignore` té `docs/` (sense cometre), però `docs/HISTORIA_I_DECISIONS.md` és al
+      repositori i el README l'enllaça: decidir si es publica o no.
+- [ ] Triar el nom de l'eina (secció 10.8).

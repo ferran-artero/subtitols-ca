@@ -96,13 +96,13 @@
         <div class="fitxer">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9.5v5l4.5-2.5z"/></svg>
           <div class="nom"><strong id="nom-fitxer"></strong><small id="mida-fitxer"></small></div>
-          <button class="boto pla" type="button" id="b-canvia" data-tria="f-video">Canvia</button>
           <button class="boto" type="button" id="b-cancel" hidden>Cancel·la</button>
+          <button class="boto pla" type="button" id="b-canvia" data-tria="f-video">Canvia</button>
           <button class="boto prim" type="button" id="b-transcriu" disabled>Transcriu</button>
           <div class="menu baixa">
-            <button class="boto prim" type="button" data-baixa="srt" disabled>
+            <button class="boto prim" type="button" data-baixa="srt">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>Baixa SRT</button>
-            <button class="boto prim" type="button" data-menu="m-baixa" aria-haspopup="true" aria-expanded="false" aria-label="Altres formats" title="Altres formats" disabled>
+            <button class="boto prim" type="button" data-menu="m-baixa" aria-haspopup="true" aria-expanded="false" aria-label="Altres formats" title="Altres formats">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
             <div class="desplegable amunt" id="m-baixa" hidden>
               <button type="button" data-baixa="vtt"><b>VTT</b> per a la web i YouTube</button>
@@ -166,7 +166,6 @@
       <h2>Subtítols <span id="nombre"></span>
         <button type="button" id="b-desfes" hidden>Desfés la correcció</button></h2>
       <div id="avisos"></div>
-      <div id="estat"></div>
       <div id="llista"></div>
 
     </aside>

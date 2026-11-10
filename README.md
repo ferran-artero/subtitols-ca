@@ -12,7 +12,8 @@ Està pensat per a creadors de contingut en català, amb atenció especial al **
 > **Estat:** en desenvolupament. La web ja transcriu al navegador de cap a cap (reconeixement,
 > puntuació i subtítols) amb el mateix resultat que la versió de referència en Python i a la
 > mateixa velocitat. Els models es baixen de Hugging Face. Funciona també al mòbil, més a poc a
-> poc. Falta acabar la interfície i l'editor de la transcripció.
+> poc. La interfície ja permet arrossegar el fitxer, previsualitzar, corregir els subtítols i
+> baixar-los; falta completar l'editor (buscar i substituir) i la robustesa.
 
 ---
 
@@ -35,7 +36,7 @@ vídeo/àudio ─► àudio 16 kHz ─► detecció de veu ─► reconeixement 
    noms propis, el de la Universitat de Múrcia.
 5. **Subtítols.** Es talla on menys molesta (signes, pauses; mai darrere d'un article o una
    preposició) respectant els caràcters per línia, les línies i la velocitat de lectura. Hi ha
-   perfils per a vídeo horitzontal, vertical (Reels, TikTok) i accessibilitat, i es pot ressaltar
+   perfils per a vídeo horitzontal, vertical (Reels, TikTok) i lectura pausada, i es pot ressaltar
    cada paraula quan es pronuncia (subratllat, color o efecte karaoke).
 
 Tots els models s'executen amb ONNX Runtime. La web els baixa la primera vegada (≈ 460 MB) i
@@ -65,12 +66,15 @@ La majoria d'errors que queden són formes dialectals que el model normalitza ("
 ```
 subtitols-ca/
 ├── web/                   # la pàgina (és l'única carpeta que es publica a GitHub Pages)
-│   ├── index.html         # pujar → transcriure → previsualitzar i baixar SRT/VTT/TXT/JSON
+│   ├── index.html         # pujar → transcriure → previsualitzar, corregir i baixar SRT/VTT/TXT/JSON
 │   ├── coi-serviceworker.js  # capçaleres COOP/COEP perquè el motor puga fer servir tots els nuclis
+│   ├── css/estil.css      # estil (tema clar i fosc, ordinador i mòbil)
+│   ├── fonts/             # Inter (SIL OFL 1.1), servida des del mateix origen
 │   └── js/
+│       ├── interficie.js  # tema, arrossegar fitxers, estat de la pàgina i desplegables
 │       ├── transcriu.js   # progrés i comunicació amb el motor
 │       ├── audio.js, mp4.js   # àudio del vídeo a 16 kHz (descodificador del navegador)
-│       ├── previsualitza.js, subtitols.js   # segmentació i previsualització
+│       ├── previsualitza.js, subtitols.js   # segmentació, previsualització i correccions
 │       ├── motor/         # motor en JavaScript (Web Worker, models en memòria cau)
 │       └── vendor/ort/    # onnxruntime-web 1.29.0 (WASM amb fils, MIT)
 ├── eines/
@@ -130,8 +134,9 @@ Els models convertits també són a Hugging Face (vegeu [`MODELS.md`](MODELS.md)
       [puntuació de Softcatalà](https://huggingface.co/ferran-artero/fullstop-catalan-punctuation-prediction-onnx))
 - [x] **Fase 5:** segmentació dels subtítols (caràcters per línia, velocitat de lectura, talls
       per frases, perfils per a vídeo horitzontal i vertical, ressaltat de paraules)
-- [ ] **Fase 6:** interfície acabada i editor de la transcripció (la pàgina actual ja puja,
-      transcriu, previsualitza i descarrega SRT/VTT/TXT/JSON)
+- [ ] **Fase 6:** interfície i editor de la transcripció (fet: disseny per a ordinador i mòbil,
+      tema clar i fosc, arrossegar fitxers i correcció de cada subtítol; falta buscar i
+      substituir i saltar al vídeo des d'una paraula)
 - [ ] **Fases 7–9:** robustesa, proves automàtiques i versió 1.0
 - [ ] **Després:** ajust del model amb dades balears i valencianes, i subtítols en temps real
 
