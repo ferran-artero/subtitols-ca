@@ -13,6 +13,7 @@ const CLAU = "subtitols-ca.params", CLAU_SESSIO = "subtitols-ca.sessio";
 // doc: el JSON del motor sencer (és el que es baixa i es desa); paraules = doc.paraules
 let doc = null, paraules = null, nomBase = "", P = null, cues = [], finals = [], actiu = -1;
 const desfets = [];                       // correccions fetes, per a desfer-les
+const spans = new Map();                  // paraula -> la seua <span> a la llista
 
 // ---------------------------------------------------------------- paràmetres
 
@@ -49,6 +50,7 @@ function desa() {
 function recalcula() {
   P = llig();
   desa();
+  form.toggleAttribute("data-ressalta", !!P.ressalta);   // el CSS només mostra les marques si hi ha ressaltat
   if (!paraules) return;
   cues = S.segmenta(paraules, P);
   finals = S.expandeix(cues, P);
@@ -76,12 +78,13 @@ function pintaLlista() {
   $("#nombre").textContent = cues.length ? `(${cues.length})` : "";
   $("#b-desfes").hidden = !desfets.length;
   const frag = document.createDocumentFragment();
+  spans.clear();
   cues.forEach((c, i) => {
     const d = document.createElement("div");
     d.className = "sub";
     d.dataset.i = i;
     d.innerHTML = `<small>${fmt(c.ini)} → ${fmt(c.fi)}</small><span class="text"></span>` +
-      `<button type="button" class="llapis" aria-label="Corregeix aquest subtítol" title="Corregeix">${LLAPIS}</button>`;
+      `<button type="button" class="mini llapis" aria-label="Corregeix aquest subtítol" title="Corregeix">${LLAPIS}</button>`;
     c.linies.forEach((lin, l) => {        // una <span> per paraula: en clicar-la, el vídeo hi salta
       if (l) d.children[1].append("\n");
       lin.forEach((p, k) => {
@@ -89,12 +92,14 @@ function pintaLlista() {
         s.className = "p";
         s.dataset.t = p.ini;
         s.textContent = p.text + (p.punt || "");
+        spans.set(p, s);
         d.children[1].append(k ? " " : "", s);
       });
     });
     frag.append(d);
   });
   llista.replaceChildren(frag);
+  marcaCerca();
   document.dispatchEvent(new CustomEvent("subtitols", { detail: { nombre: cues.length, nom: nomBase } }));   // per a interficie.js
 }
 
@@ -157,7 +162,7 @@ function edita(d) {
     caixa.contentEditable = "false";
     d.classList.remove("editant");
     if (!desa || text.replace(/\s+/g, " ") === abans.replace(/\s+/g, " ")) { recalcula(); return; }
-    corregeix([{ i: paraules.indexOf(c.paraules[0]), n: c.paraules.length, noves: paraulesNoves(text, c.paraules) }]);
+    apunta([canvia(paraules.indexOf(c.paraules[0]), c.paraules.length, paraulesNoves(text, c.paraules))]);
   };
   const tecla = (e) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); acaba(true); }
@@ -167,10 +172,12 @@ function edita(d) {
   caixa.addEventListener("blur", () => acaba(true), { once: true });
 }
 
-/** Aplica els canvis [{i, n, noves}] (de l'últim al primer, perquè els índexs valguen) i els
- *  apunta junts per a desfer-los d'una vegada. */
-function corregeix(canvis) {
-  desfets.push(canvis.map(({ i, n, noves }) => ({ i, noves, velles: paraules.splice(i, n, ...noves) })));
+/** Canvia n paraules a partir de la i per les noves. Torna el que cal per a desfer-ho. */
+const canvia = (i, n, noves) => ({ i, noves, velles: paraules.splice(i, n, ...noves) });
+
+/** Apunta una correcció (un canvi o diversos, en l'ordre en què s'han fet) per a desfer-la sencera. */
+function apunta(canvis) {
+  desfets.push(canvis);
   actualitza();
 }
 
@@ -185,32 +192,105 @@ $("#b-desfes").addEventListener("click", () => {
   actualitza();
 });
 
-// Cerca i substitueix: paraules senceres (una o diverses de seguides), sense distingir majúscules.
-// Es conserven el signe de darrere i la majúscula inicial del que se substitueix. 
+// ---------------------------------------------------------------- cerca i substitueix
+
+// Com a qualsevol editor: es busca el text (dins d'una paraula o de diverses de seguides, sense
+// distingir majúscules), es marca a la llista i es va d'una coincidència a l'altra; substituir és opcional.
 const fCerca = $("#cerca");
+let trobats = [], ara = 0;                // coincidències {i, n, a, b} i la que s'està mirant
+const marcats = new Set();                // paraules amb el text marcat a la llista
+
+/** Coincidències: n paraules des de la i; de la lletra a de la primera fins a la b de l'última. */
+function coincidencies(text) {
+  const t = text.toLowerCase().split(/\s+/).filter(Boolean), n = t.length, res = [];
+  const w = (k) => paraules[k].text.toLowerCase();
+  if (n === 1) {
+    paraules.forEach((_, i) => {
+      for (let a = w(i).indexOf(t[0]); a >= 0; a = w(i).indexOf(t[0], a + t[0].length)) res.push({ i, n, a, b: a + t[0].length });
+    });
+  } else if (n) {
+    for (let i = 0; i + n <= paraules.length; i++) {
+      if (!w(i).endsWith(t[0]) || !w(i + n - 1).startsWith(t[n - 1])) continue;
+      if (t.slice(1, -1).some((x, k) => w(i + 1 + k) !== x)) continue;
+      res.push({ i, n, a: w(i).length - t[0].length, b: t[n - 1].length });
+      i += n - 1;                         // sense encavalcaments
+    }
+  }
+  return res;
+}
+
+/** Torna a buscar i pinta les marques a la llista. mou: porta la llista i el vídeo a la coincidència. */
+function marcaCerca(mou = false) {
+  for (const p of marcats) spans.get(p)?.replaceChildren(p.text + (p.punt || ""));
+  marcats.clear();
+  trobats = !fCerca.hidden && paraules ? coincidencies(fCerca.que.value) : [];
+  ara = trobats.length ? (ara + trobats.length) % trobats.length : 0;
+  $("#cerca-n").textContent = trobats.length ? `${ara + 1} de ${trobats.length}` : fCerca.que.value.trim() ? "Cap" : "";
+  const trossos = new Map();              // paraula -> [[de, fins, és l'actual]]
+  trobats.forEach((m, j) => {
+    for (let k = 0; k < m.n; k++) {
+      const p = paraules[m.i + k];
+      if (!trossos.has(p)) trossos.set(p, []);
+      trossos.get(p).push([k ? 0 : m.a, k === m.n - 1 ? m.b : p.text.length, j === ara]);
+    }
+  });
+  for (const [p, tr] of trossos) {
+    const s = spans.get(p), parts = [];
+    let fins = 0;
+    for (const [a, b, actual] of tr) {
+      const m = document.createElement("mark");
+      m.textContent = p.text.slice(a, b);
+      m.classList.toggle("ara", actual);
+      parts.push(p.text.slice(fins, a), m);
+      fins = b;
+    }
+    s.replaceChildren(...parts, p.text.slice(fins) + (p.punt || ""));
+    marcats.add(p);
+  }
+  if (mou && trobats.length) {
+    const p = paraules[trobats[ara].i];
+    ensenya(spans.get(p).closest(".sub"));
+    if (video.src) { video.pause(); video.currentTime = p.ini + 0.001; }
+  }
+}
+
+/** Substitueix una coincidència pel text de «Substitueix per»; conserva la resta de la paraula,
+ *  el signe de darrere i la majúscula inicial. */
+function substitueix({ i, n, a, b }) {
+  const velles = paraules.slice(i, i + n), primera = velles[0].text;
+  let per = fCerca.per.value.trim();
+  if (per && a === 0 && /^\p{Lu}/u.test(primera)) per = per[0].toUpperCase() + per.slice(1);
+  let text = primera.slice(0, a) + per + velles[n - 1].text.slice(b);
+  if (text && !SIGNES.includes(text.at(-1))) text += velles[n - 1].punt || "";
+  return canvia(i, n, paraulesNoves(text, velles));
+}
+
+const ves = (pas) => { ara += pas; marcaCerca(true); };
 $("#b-cerca").addEventListener("click", () => {
   fCerca.hidden = !fCerca.hidden;
+  ara = 0;
+  marcaCerca();
   if (!fCerca.hidden) fCerca.que.focus();
 });
-fCerca.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const que = fCerca.que.value.toLowerCase().split(/\s+/).filter(Boolean), n = que.length;
-  if (!paraules || !n) return;
-  const canvis = [];
-  for (let i = paraules.length - n; i >= 0; i--) {
-    if (!que.every((q, k) => paraules[i + k].text.toLowerCase() === q)) continue;
-    const velles = paraules.slice(i, i + n);
-    let per = fCerca.per.value.trim();
-    if (per && /^\p{Lu}/u.test(velles[0].text)) per = per[0].toUpperCase() + per.slice(1);
-    if (per && !SIGNES.includes(per.at(-1))) per += velles.at(-1).punt || "";
-    const noves = paraulesNoves(per, velles);
-    if (noves.length === n && noves.every((p, k) => p === velles[k])) continue;      // ja era igual
-    canvis.push({ i, n, noves });
-    i -= n - 1;
-  }
-  if (canvis.length) corregeix(canvis);
-  nota(canvis.length ? `${canvis.length} ${canvis.length === 1 ? "canvi fet" : "canvis fets"}.` : `No he trobat «${fCerca.que.value.trim()}».`);
+fCerca.que.addEventListener("input", () => { ara = 0; marcaCerca(true); });
+$("#b-anterior").addEventListener("click", () => ves(-1));
+$("#b-seguent").addEventListener("click", () => ves(1));
+$("#b-substitueix").addEventListener("click", () => {
+  if (!trobats.length) return;
+  apunta([substitueix(trobats[ara])]);    // en repintar, la següent coincidència passa a ser l'actual
+  marcaCerca(true);
 });
+$("#b-tots").addEventListener("click", () => {
+  if (!trobats.length) return;
+  const n = trobats.length;
+  apunta(trobats.reverse().map(substitueix));       // de l'última a la primera: els índexs valen
+  nota(`${n} ${n === 1 ? "canvi fet" : "canvis fets"}.`);
+});
+fCerca.addEventListener("submit", (e) => {          // Retorn: següent (o substitueix, des del segon camp)
+  e.preventDefault();
+  if (document.activeElement === fCerca.per) $("#b-substitueix").click(); else ves(1);
+});
+fCerca.addEventListener("keydown", (e) => { if (e.key === "Escape") $("#b-cerca").click(); });
 
 // ---------------------------------------------------------------- capa sobre el vídeo
 
@@ -254,6 +334,13 @@ function htmlEntrada(e) {               // com S.text(), però amb <span> per a 
   return res.join("<br>");
 }
 
+/** Fa visible un element de la llista movent només la llista, mai la pàgina. */
+function ensenya(el) {
+  const r = el.getBoundingClientRect(), R = llista.getBoundingClientRect();
+  if (r.top < R.top) llista.scrollTop -= R.top - r.top + 8;
+  else if (r.bottom > R.bottom) llista.scrollTop += r.bottom - R.bottom + 8;
+}
+
 function pintaCapa() {
   const i = finals.length ? cerca(video.currentTime) : -1;
   if (i === actiu) return;
@@ -264,11 +351,7 @@ function pintaCapa() {
   const d = c >= 0 ? llista.children[c] : null;
   if (d) {
     d.classList.add("actiu");
-    if (!video.paused && !llista.querySelector(".editant")) {   // es mou la llista, mai la pàgina
-      const r = d.getBoundingClientRect(), R = llista.getBoundingClientRect();
-      if (r.top < R.top) llista.scrollTop -= R.top - r.top + 8;
-      else if (r.bottom > R.bottom) llista.scrollTop += r.bottom - R.bottom + 8;
-    }
+    if (!video.paused && !llista.querySelector(".editant")) ensenya(d);
   }
 }
 
@@ -361,7 +444,7 @@ document.querySelectorAll("[data-baixa]").forEach((b) => b.addEventListener("cli
 let desats = null;
 try { desats = JSON.parse(localStorage.getItem(CLAU) || "null"); } catch { /* sense memòria */ }
 omple(desats?.perfil || "horitzontal", desats?.P || {});
-P = llig();
+recalcula();
 
 let sessio = null;
 try { sessio = JSON.parse(localStorage.getItem(CLAU_SESSIO) || "null"); } catch { /* sense memòria */ }

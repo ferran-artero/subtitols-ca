@@ -208,10 +208,17 @@ input[type="color"]::-moz-color-swatch { border: 0; }
 
 .panell h2 { margin: 0; padding: 14px 16px 6px; font-size: 13px; font-weight: 600; color: var(--text2);
              letter-spacing: .01em; display: flex; align-items: baseline; gap: 6px; }
-#b-cerca { position: static; translate: none; opacity: 1; align-self: center; margin: -6px -6px -6px auto; }
+#b-cerca { align-self: center; margin: -6px -6px -6px auto; }
 #b-desfes + #b-cerca { margin-left: 4px; }
 #b-desfes[hidden] + #b-cerca { margin-left: auto; }
-#cerca { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; padding: 4px 16px 10px; }
+#cerca { display: grid; gap: 8px; padding: 4px 16px 10px; }
+#cerca > div { display: flex; align-items: center; gap: 6px; }
+#cerca input { flex: 1; min-width: 0; }
+#cerca .boto { padding: 0 12px; }
+#cerca-n { min-width: 52px; text-align: right; font-size: 12.5px; color: var(--suau); font-variant-numeric: tabular-nums;
+           white-space: nowrap; }
+mark { background: #ffd95a; color: #111; border-radius: 3px; }
+mark.ara { background: var(--accent); color: #fff; }
 .sub .p:hover { text-decoration: underline; text-decoration-color: var(--suau); text-underline-offset: 3px; }
 .sub.editant .p:hover { text-decoration: none; }
 #b-desfes { margin-left: auto; padding: 0; border: 0; background: none; cursor: pointer; font-size: 12.5px;
@@ -231,12 +238,12 @@ input[type="color"]::-moz-color-swatch { border: 0; }
 .sub small { display: block; margin-bottom: 1px; font-size: 12px; font-variant-numeric: tabular-nums; }
 .sub .text { display: block; border-radius: 6px; outline: 0; }
 .sub.editant { background: var(--panell); box-shadow: inset 0 0 0 1.5px var(--accent); cursor: text; }
-.llapis { position: absolute; right: 6px; top: 50%; translate: 0 -50%; width: 30px; height: 30px; display: grid;
-          place-items: center; border: 0; border-radius: 8px; background: none; color: var(--suau); cursor: pointer;
-          opacity: 0; }
-.llapis svg { width: 16px; height: 16px; }
+.mini { width: 30px; height: 30px; display: grid; place-items: center; flex: none; padding: 0; border: 0;
+        border-radius: 8px; background: none; color: var(--suau); cursor: pointer; }
+.mini svg { width: 16px; height: 16px; }
+.mini:hover { background: var(--vora); color: var(--text); }
+.llapis { position: absolute; right: 6px; top: 50%; translate: 0 -50%; opacity: 0; }
 .sub:hover .llapis, .llapis:focus-visible { opacity: 1; }
-.llapis:hover { background: var(--vora); color: var(--text); }
 .sub.editant .llapis { display: none; }
 @media (hover: none) { .llapis { opacity: .7; } }
 

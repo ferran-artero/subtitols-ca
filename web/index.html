@@ -62,7 +62,7 @@
 <input type="file" id="f-json" accept=".json,application/json" hidden>
 
 <main>
-  <!-- ───────── Inici: triar o arrossegar el fitxer ───────── --> 
+  <!-- ───────── Inici: triar o arrossegar el fitxer ───────── -->
   <section id="inici">
     <h1>Subtítols <em>en català</em>,<br>fets al teu navegador</h1>
     <p class="entrada">Puja un vídeo o un àudio i baixa els subtítols a punt per a Premiere o CapCut.</p>
@@ -168,12 +168,23 @@
 
       <h2>Subtítols <span id="nombre"></span>
         <button type="button" id="b-desfes" hidden>Desfés la correcció</button>
-        <button type="button" class="llapis" id="b-cerca" aria-label="Cerca i substitueix" title="Cerca i substitueix">
+        <button type="button" class="mini" id="b-cerca" aria-label="Cerca i substitueix" title="Cerca i substitueix">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg></button></h2>
       <form id="cerca" hidden>
-        <input type="text" name="que" placeholder="Cerca" aria-label="Cerca" required>
-        <input type="text" name="per" placeholder="Substitueix per" aria-label="Substitueix per">
-        <button class="boto" type="submit">Canvia</button>
+        <div>
+          <input type="text" name="que" placeholder="Cerca" aria-label="Cerca" autocomplete="off" enterkeyhint="search">
+          <output id="cerca-n"></output>
+          <button type="button" class="mini" id="b-anterior" aria-label="Coincidència anterior" title="Anterior">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>
+          <button type="button" class="mini" id="b-seguent" aria-label="Coincidència següent" title="Següent">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+        </div>
+        <div>
+          <input type="text" name="per" placeholder="Substitueix per" aria-label="Substitueix per" autocomplete="off">
+          <button class="boto" type="button" id="b-substitueix">Substitueix</button>
+          <button class="boto" type="button" id="b-tots">Tots</button>
+        </div>
+        <button type="submit" hidden></button>
       </form>
       <div id="avisos"></div>
       <div id="llista"></div>

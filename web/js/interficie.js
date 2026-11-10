@@ -7,7 +7,7 @@
 
 const $ = (s) => document.querySelector(s);
 const arrel = document.documentElement, cos = document.body;
-const fVideo = $("#f-video"), fJson = $("#f-json"), form = $("#params"), capa = $("#capa");
+const fVideo = $("#f-video"), fJson = $("#f-json"), capa = $("#capa");
 
 /** Llig i desa a la memòria del navegador (si n'hi ha). */
 const memoria = {
@@ -103,11 +103,6 @@ fVideo.addEventListener("change", () => {
   $("#escena").classList.toggle("audio", f.type.startsWith("audio/"));
 });
 
-// les marques del ressaltat només es mostren si hi ha ressaltat
-const marques = () => form.toggleAttribute("data-ressalta", !!form.ressalta.value);
-form.addEventListener("input", marques);
-marques();
-
 // ---------------------------------------------------------------- aspecte de la previsualització
 
 const CLAU_VISTA = "subtitols-ca.vista", vMida = $("#v-mida"), vFons = $("#v-fons");
@@ -126,7 +121,7 @@ for (const el of [vMida, vFons]) el.addEventListener("change", () => {
 });
 vista();
 
-// ---------------------------------------------------------------- desplegables 
+// ---------------------------------------------------------------- desplegables
 
 function tanca(excepte = null) {
   document.querySelectorAll("[data-menu]").forEach((b) => {
