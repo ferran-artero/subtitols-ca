@@ -79,10 +79,12 @@ subtitols-ca/
 │       └── vendor/ort/    # onnxruntime-web 1.29.0 (WASM amb fils, MIT)
 ├── eines/
 │   ├── transcriu.py       # àudio o vídeo -> subtítols, des de la línia d'ordres
-│   ├── serveix.py         # serveix la web en local amb els models de la teua carpeta
+│   ├── serveix.py         # serveix la web (i el banc de proves) en local amb els models de la teua carpeta
 │   ├── motor_ref/         # motor de referència (numpy + onnxruntime + tokenizers) i segmentació
 │   └── models/            # converteixen i quantitzen els models a ONNX
-├── proves/                # comparen la versió JavaScript amb la de Python
+├── proves/                # igualtat JS = Python, mètriques (avalua.py) i banc de proves (banc/)
+├── docs/ARQUITECTURA.md   # com funciona per dins i què s'ha mesurat per decidir-ho
+├── AGENTS.md         # normes per a agents de codi (CLAUDE.md l'importa)
 ├── MODELS.md         # models, autors, llicències i cites
 ├── LICENSE           # GPL-3.0
 └── NOTICE            # condició d'atribució

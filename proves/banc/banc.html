@@ -1,0 +1,168 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later · Copyright (C) 2026 Ferran Artero Merino — vegeu NOTICE -->
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banc de proves del motor</title>
+<style>
+  :root { --fons: #f7f7f5; --text: #1d1d1b; --suau: #6b6b66; --linia: #dcdcd6; --ok: #1f7a3a; --ko: #b3261e; --acc: #8a1c1c; }
+  body { margin: 0; padding: 24px 16px 48px; background: var(--fons); color: var(--text); font: 15px/1.45 system-ui, sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; } h2 { font-size: 16px; margin: 28px 0 8px; }
+  .suau { color: var(--suau); }
+  fieldset { border: 1px solid var(--linia); border-radius: 8px; padding: 10px 14px; margin: 12px 0; background: #fff; }
+  legend { font-weight: 600; padding: 0 6px; }
+  label { display: inline-flex; gap: 6px; align-items: center; margin: 3px 16px 3px 0; }
+  button { font: inherit; padding: 8px 18px; border-radius: 6px; border: 0; background: var(--acc); color: #fff; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+  table { border-collapse: collapse; width: 100%; background: #fff; font-variant-numeric: tabular-nums; font-size: 13.5px; }
+  th, td { border-bottom: 1px solid var(--linia); padding: 5px 8px; text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+  th { background: #efefea; font-weight: 600; }
+  .taula { overflow-x: auto; }
+  .ok { color: var(--ok); font-weight: 600; } .ko { color: var(--ko); font-weight: 600; }
+  #estat { font-family: ui-monospace, monospace; font-size: 13px; margin-top: 10px; min-height: 1.4em; }
+  #entorn span { margin-right: 18px; }
+  pre { white-space: pre-wrap; color: var(--ko); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Banc de proves del motor</h1>
+  <p class="suau">Transcriu els àudios de referència amb cada configuració, mesura cada etapa i ho compara amb Python.
+    Els resultats es desen a <code>resultats/banc/navegador/</code>.</p>
+  <div id="entorn"></div>
+
+  <fieldset><legend>Configuracions</legend><div id="confs"></div>
+    <label>Fils per a les configuracions "N fils": <input id="nfils" type="number" min="1" max="32" style="width:4em"></label>
+  </fieldset>
+  <fieldset><legend>Àudios</legend>
+    <label><input type="radio" name="joc" value="rapid" checked> Ràpid: Daniel Sancho + 5 clips</label>
+    <label><input type="radio" name="joc" value="clips"> 38 clips</label>
+    <label><input type="radio" name="joc" value="videos"> 3 vídeos</label>
+    <label><input type="radio" name="joc" value="tots"> Tots (38 clips + 3 vídeos)</label>
+  </fieldset>
+  <fieldset><legend>Font de l'àudio</legend>
+    <label><input type="radio" name="font" value="python" checked> pcm.npy (llegit per Python: hauria de donar idèntic)</label>
+    <label><input type="radio" name="font" value="navegador"> fitxer original descodificat pel navegador (com a la web)</label>
+  </fieldset>
+  <button id="comenca">Comença</button>
+  <div id="estat"></div>
+  <pre id="error"></pre>
+
+  <h2>Resum per configuració</h2>
+  <div class="taula"><table id="resum"><thead><tr>
+    <th>Configuració</th><th>Grup</th><th>Àudio (s)</th><th>Càrrega (s)</th><th>Escalfa (s)</th><th>VAD</th><th>Encoder</th>
+    <th>Enc. finestres</th><th>Bucle</th><th>Bucle fin.</th><th>Total ASR</th><th>RTF</th><th>Idèntics</th><th>Paraules dif.</th>
+  </tr></thead><tbody></tbody></table></div>
+
+  <h2>Detall per àudio</h2>
+  <div class="taula"><table id="detall"><thead><tr>
+    <th>Configuració</th><th>Àudio</th><th>Durada</th><th>VAD</th><th>Encoder</th><th>Enc. fin.</th><th>Bucle</th><th>Bucle fin.</th>
+    <th>Total</th><th>RTF</th><th>Crides</th><th>Trossos</th><th>Resultat</th>
+  </tr></thead><tbody></tbody></table></div>
+</main>
+<script type="module">
+const $ = (s) => document.querySelector(s);
+const hc = navigator.hardwareConcurrency || 4;
+$("#nfils").value = Math.min(hc, 8);
+let gpu = null;
+if (navigator.gpu) {
+  try { const a = await navigator.gpu.requestAdapter(); if (a) gpu = { info: a.info || {}, f16: a.features.has("shader-f16") }; } catch {}
+}
+$("#entorn").innerHTML = [
+  `<span>crossOriginIsolated: <b class="${crossOriginIsolated ? "ok" : "ko"}">${crossOriginIsolated ? "sí" : "NO (sense fils)"}</b></span>`,
+  `<span>nuclis lògics: <b>${hc}</b></span>`,
+  `<span>WebGPU: <b class="${gpu ? "ok" : "ko"}">${gpu ? `sí — ${gpu.info.vendor || "?"} ${gpu.info.architecture || ""} ${gpu.info.description || ""} (f16: ${gpu.f16 ? "sí" : "no"})` : "no disponible"}</b></span>`,
+].join("");
+
+const W = "ort.wasm.min.mjs", G = "ort.webgpu.min.mjs";
+const CONFS = [
+  { id: "wasm-1", nom: "WASM, 1 fil (referència)", ep: "wasm", lib: W, fils: 1, encoder: "encoder.q8w.onnx", on: true },
+  { id: "wasm-2", nom: "WASM, 2 fils", ep: "wasm", lib: W, fils: 2, encoder: "encoder.q8w.onnx", on: false },
+  { id: "wasm-4", nom: "WASM, 4 fils", ep: "wasm", lib: W, fils: 4, encoder: "encoder.q8w.onnx", on: false },
+  { id: "wasm-N", nom: "WASM, N fils", ep: "wasm", lib: W, fils: "N", encoder: "encoder.q8w.onnx", on: true },
+  { id: "wasmG-N", nom: "WASM, N fils, amb el paquet webgpu (per a separar efectes)", ep: "wasm", lib: G, fils: "N", encoder: "encoder.q8w.onnx", on: false },
+  { id: "webgpu-q8w", nom: "WebGPU encoder q8w (191 MB), N fils", ep: "webgpu", lib: G, fils: "N", encoder: "encoder.q8w.onnx", on: !!gpu, gpu: true },
+  { id: "webgpu-fp32", nom: "WebGPU encoder fp32 (481 MB), N fils", ep: "webgpu", lib: G, fils: "N", encoder: "encoder.onnx", on: false, gpu: true },
+];
+$("#confs").innerHTML = CONFS.map((c) =>
+  `<label><input type="checkbox" value="${c.id}" ${c.on ? "checked" : ""} ${c.gpu && !gpu ? "disabled" : ""}> ${c.nom}</label>`).join("<br>");
+
+const index = await (await fetch("/referencies/index.json")).json();
+const { llegeixAudio } = await import("/js/audio.js");
+const originals = Object.fromEntries(index.map((a) => [a.nom, a.original]));
+const clips = index.filter((a) => /^(ba|va|comu)_/.test(a.nom)).map((a) => a.nom);
+const videos = index.filter((a) => !/^(ba|va|comu)_/.test(a.nom)).map((a) => a.nom);
+const jocs = { videos, rapid: ["017_Daniel Sancho", ...clips.filter((_, i) => i % 8 === 0).slice(0, 5)], clips, tots: [...clips, ...videos] };
+
+const grup = (nom) => (/^(ba|va|comu)_/.test(nom) ? "clips" : nom);
+const f1 = (v) => v.toFixed(1), f2 = (v) => v.toFixed(2);
+const prefix = new Date().toISOString().slice(0, 16).replace(/[:T]/g, "-");
+const resum = [];
+
+function executaConf(c, audios) {
+  return new Promise((resol) => {
+    const w = new Worker("./banc.worker.js", { type: "module" });
+    const files = [];
+    let prep = null;
+    w.onmessage = ({ data: m }) => {
+      if (m.tipus === "demana") {
+        $("#estat").textContent = `[${c.nom}] descodificant ${originals[m.nom]}…`;
+        (async () => {
+          try {
+            const blob = await (await fetch("/dades/" + originals[m.nom].split("/").map(encodeURIComponent).join("/"))).blob();
+            const pcm = await llegeixAudio(new File([blob], m.nom));
+            w.postMessage({ tipus: "pcm", pcm }, [pcm.buffer]);
+          } catch (e) { w.postMessage({ tipus: "pcm", error: e.message }); }
+        })();
+      } else if (m.tipus === "estat") $("#estat").textContent = `[${c.nom}] ${m.text}`;
+      else if (m.tipus === "preparat") prep = m;
+      else if (m.tipus === "audio") {
+        const f = m.fila;
+        if (f.error) { $("#error").textContent += `[${c.nom}] ${f.nom}: ${f.error}\n`; return; }
+        files.push(f);
+        $("#detall tbody").insertAdjacentHTML("beforeend", `<tr><td>${c.id}</td><td>${f.nom}</td><td>${f1(f.dur)}</td><td>${f1(f.vad)}</td>
+          <td>${f1(f.encoder)}</td><td>${f1(f.fin_encoder)}</td><td>${f1(f.bucle)}</td><td>${f1(f.fin_bucle)}</td><td>${f1(f.total)}</td>
+          <td>${f2((f.total + f.vad) / f.dur)}</td><td>${f.crides}</td><td>${f.trossos}</td>
+          <td class="${f.identic ? "ok" : "ko"}">${f.identic ? "idèntic" : `${f.dif} paraules dif.`}</td></tr>`);
+      } else if (m.tipus === "error" || m.tipus === "fet") {
+        if (m.tipus === "error") $("#error").textContent += `[${c.nom}] ${m.missatge}\n`;
+        w.terminate();
+        const grups = {};
+        for (const f of files) (grups[grup(f.nom)] ??= []).push(f);
+        for (const [g, fs] of Object.entries(grups)) {
+          const s = (k) => fs.reduce((a, f) => a + (typeof f[k] === "boolean" ? +f[k] : f[k]), 0);
+          const r = { conf: c.id, grup: g, dur: s("dur"), vad: s("vad"), encoder: s("encoder"), fin_encoder: s("fin_encoder"), bucle: s("bucle"),
+                      fin_bucle: s("fin_bucle"), total: s("total"), identics: s("identic"), n: fs.length, dif: s("dif"), paraules: s("nParaules"), prep };
+          resum.push(r);
+          $("#resum tbody").insertAdjacentHTML("beforeend", `<tr><td>${c.nom}</td><td>${g}</td><td>${f1(r.dur)}</td>
+            <td>${prep ? f1(prep.carrega) : "–"}</td><td>${prep ? f1(prep.escalfa) : "–"}</td><td>${f1(r.vad)}</td><td>${f1(r.encoder)}</td>
+            <td>${f1(r.fin_encoder)}</td><td>${f1(r.bucle)}</td><td>${f1(r.fin_bucle)}</td><td>${f1(r.total)}</td>
+            <td><b>${f2((r.total + r.vad) / r.dur)}</b></td><td class="${r.identics === r.n ? "ok" : "ko"}">${r.identics}/${r.n}</td><td>${r.dif}/${r.paraules}</td></tr>`);
+        }
+        resol();
+      }
+    };
+    w.onerror = (e) => { $("#error").textContent += `[${c.nom}] ${e.message}\n`; w.terminate(); resol(); };
+    const fils = c.fils === "N" ? Number($("#nfils").value) : c.fils;
+    const font = document.querySelector("input[name=font]:checked").value;
+    w.postMessage({ ep: c.ep, lib: c.lib, fils, encoder: c.encoder, audios, font,
+                    etiqueta: `${prefix}_${c.fils === "N" ? c.id.replace("N", fils) : c.id}${font === "navegador" ? "_nav" : ""}` });
+  });
+}
+
+$("#comenca").onclick = async () => {
+  $("#comenca").disabled = true;
+  const audios = jocs[document.querySelector("input[name=joc]:checked").value];
+  const triades = [...document.querySelectorAll("#confs input:checked")].map((i) => CONFS.find((c) => c.id === i.value));
+  for (const c of triades) await executaConf(c, audios);
+  const entorn = { hc, gpu, crossOriginIsolated, ua: navigator.userAgent, nfils: Number($("#nfils").value) };
+  await fetch(`/desa/${prefix}_resum.json`, { method: "POST", body: JSON.stringify({ entorn, resum }) }).catch(() => {});
+  $("#estat").textContent = `Fet. Resultats a resultats/banc/navegador/ (${prefix}_*).`;
+  $("#comenca").disabled = false;
+};
+</script>
+</body>
+</html>

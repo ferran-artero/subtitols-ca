@@ -1,0 +1,3 @@
+# Proves i avaluació: el motor de referència + jiwer (WER i alineació)
+-r ../eines/requirements.txt
+jiwer

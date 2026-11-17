@@ -1,0 +1,18 @@
+{
+  "name": "subtitols-ca",
+  "private": true,
+  "description": "Proves de Node del motor JS (web/js/motor). La web no en necessita: es publica tal qual.",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "prova:subtitols": "node proves/subtitols.test.mjs",
+    "prova:motor": "node proves/motor.test.mjs",
+    "prova:rnnt": "node proves/rnnt.test.mjs",
+    "prova:complet": "node proves/motor_complet.test.mjs",
+    "prova:puntua": "node proves/puntua.test.mjs",
+    "banc": "node proves/banc/banc.mjs"
+  },
+  "devDependencies": {
+    "onnxruntime-web": "1.29.0"
+  }
+}

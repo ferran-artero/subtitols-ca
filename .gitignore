@@ -4,11 +4,12 @@ models_onnx/
 *.nemo
 resultats/
 
-# entorns i memòria cau de Python
+# entorns, memòria cau de Python i paquets de Node (proves)
 venv*/
 .venv/
 __pycache__/
 *.pyc
+node_modules/
 
 # àudios i vídeos de proves
 *.wav
