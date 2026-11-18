@@ -107,6 +107,11 @@ COOP/COEP, com GitHub Pages, i es pot comprovar que el service worker les posa.
 Per a mesurar el rendiment (també a la web pública, p. ex. des d'un mòbil): `?fils=4` fixa el
 nombre de fils (per defecte, tots els nuclis) i `?gpu=1` executa l'encoder amb WebGPU.
 
+Per a comprovar que un canvi no empitjora els resultats (mètriques contra referències humanes) i
+per a mesurar el motor al navegador de cada dispositiu (banc de proves), vegeu
+[`proves/README.md`](proves/README.md). Com funciona tot per dins i què s'ha mesurat per
+decidir-ho és a [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md).
+
 ## Fer servir el motor en Python
 
 Mentre la web no estiga acabada, es pot transcriure des de la línia d'ordres. Cal Python 3.10 o

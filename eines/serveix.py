@@ -39,6 +39,12 @@ if ARGS.dades:
     CARPETES["/dades/"] = Path(ARGS.dades).resolve()
 
 
+class Servidor(ThreadingHTTPServer):
+    # A Windows, SO_REUSEADDR deixa obrir un segon servidor al mateix port sense cap error, i les
+    # peticions continuen anant a l'antic: millor que falli i ho digui.
+    allow_reuse_address = os.name != "nt"
+
+
 def dins(base: Path, relatiu: str) -> str | None:
     dest = (base / relatiu).resolve()
     return str(dest) if base == dest or base in dest.parents else None
@@ -94,5 +100,13 @@ if __name__ == "__main__":
         raise SystemExit(f"No trobe la carpeta dels models: {MODELS} (indica-la amb --models)")
     print(f"http://localhost:{ARGS.port}/  ({'SENSE' if ARGS.sense_coi else 'amb'} COOP/COEP, "
           f"models de {MODELS}; Ctrl+C per a parar)")
-    print(f"banc de proves: http://localhost:{ARGS.port}/banc/banc.html")
-    ThreadingHTTPServer(("127.0.0.1", ARGS.port), Gestor).serve_forever()
+    print(f"banc de proves: http://localhost:{ARGS.port}/banc/banc.html  (dades: "
+          f"{CARPETES['/dades/'] if ARGS.dades else 'cap; per a la font «navegador», --dades o SUBTITOLS_DADES'})")
+    if ARGS.dades and not CARPETES["/dades/"].is_dir():
+        print(f"[avís] No existeix la carpeta de dades: {CARPETES['/dades/']}")
+    try:
+        servidor = Servidor(("127.0.0.1", ARGS.port), Gestor)
+    except OSError as e:
+        raise SystemExit(f"No puc obrir el port {ARGS.port} ({e}). Potser ja hi ha un servidor obert: "
+                         f"tanca'l o fes servir --port.")
+    servidor.serve_forever()

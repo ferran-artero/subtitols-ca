@@ -112,7 +112,10 @@ function executaConf(c, audios) {
         $("#estat").textContent = `[${c.nom}] descodificant ${originals[m.nom]}…`;
         (async () => {
           try {
-            const blob = await (await fetch("/dades/" + originals[m.nom].split("/").map(encodeURIComponent).join("/"))).blob();
+            if (!originals[m.nom]) throw new Error("index.json no diu on és l'original (proves/referencia_motor.py --dades)");
+            const r = await fetch("/dades/" + originals[m.nom].split("/").map(encodeURIComponent).join("/"));
+            if (!r.ok) throw new Error(`${r.status} en llegir /dades/${originals[m.nom]}: el servidor s'ha engegat amb --dades o SUBTITOLS_DADES?`);
+            const blob = await r.blob();
             const pcm = await llegeixAudio(new File([blob], m.nom));
             w.postMessage({ tipus: "pcm", pcm }, [pcm.buffer]);
           } catch (e) { w.postMessage({ tipus: "pcm", error: e.message }); }

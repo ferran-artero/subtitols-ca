@@ -330,13 +330,16 @@ def avalua(hips: dict[str, dict], refs: dict[str, str], clips: set[str], srts: d
 
 
 def imprimeix(res: dict[str, dict]) -> None:
-    f = lambda v, fmt: "–" if v is None else format(v, fmt)  # noqa: E731
+    def f(v, fmt):
+        if v is None:
+            return "–"
+        return format(v, fmt[:-1]) + "%" if fmt.endswith("%") else format(v, fmt)
     print(f"{'grup':28s} {'àudios':>6s} {'paraules':>8s} {'WER':>7s} {'WER f.':>7s} {'F1 punt.':>8s} "
           f"{'F1 maj.':>7s} {'perdudes':>8s} {'sincronia':>9s} {'p10..p90':>13s} {'RTF':>6s}")
     for g, r in res.items():
         rang = "–" if r["sincronia"] is None else f"{r['sincronia_p10']:+.2f}..{r['sincronia_p90']:+.2f}"
-        print(f"{g[:28]:28s} {r['audios']:6d} {r['paraules']:8d} {f(r['wer'], '6.2f'):>6s}% "
-              f"{f(r['wer_formatat'], '6.2f'):>6s}% {f(r['f1_puntuacio'], '8.3f'):>8s} {f(r['f1_majuscules'], '7.3f'):>7s} "
+        print(f"{g[:28]:28s} {r['audios']:6d} {r['paraules']:8d} {f(r['wer'], '6.2f%'):>7s} "
+              f"{f(r['wer_formatat'], '6.2f%'):>7s} {f(r['f1_puntuacio'], '8.3f'):>8s} {f(r['f1_majuscules'], '7.3f'):>7s} "
               f"{r['perdudes']:8d} {f(r['sincronia'], '+9.2f'):>9s} {rang:>13s} {f(r['rtf'], '6.3f'):>6s}")
 
 

@@ -106,14 +106,29 @@ del límit i continua la vegada següent.
 ### Al navegador
 
 ```powershell
-python eines\serveix.py --models ruta\models_onnx            # (amb $env:SUBTITOLS_DADES definit)
+python eines\serveix.py --models ruta\models_onnx --dades ruta\dades   # o amb $env:SUBTITOLS_DADES
 # obre http://localhost:8000/banc/banc.html
 ```
+
+En arrencar, el servidor diu quina carpeta de dades serveix (`dades: …`). Sense dades, la font
+«navegador» no funciona (el banc ho diu amb un error 404 per àudio).
 
 Tria configuracions (WASM amb 1, 2, 4 o N fils; WebGPU amb l'encoder `q8w` o fp32), un joc d'àudios
 i la font de l'àudio: `pcm.npy` (el mateix que Python: ha de donar idèntic) o el fitxer original
 descodificat pel navegador (com a la web). Mostra el temps per etapa i l'RTF, i desa cada
 transcripció a `resultats\banc\navegador\<etiqueta>\`, que es pot avaluar amb `avalua.py`.
+
+Resultats de referència (17/11/2026, Chrome, PC de 8 nuclis, WASM amb 8 fils, joc «Ràpid»:
+Daniel Sancho + 5 clips):
+
+| Font de l'àudio | Idèntics a Python | Daniel: WER | 5 clips: WER | Sincronia (Daniel) |
+|---|---|---|---|---|
+| `pcm.npy` | 6/6 | 6,97 % | 8,33 % | +0,08 s (+0,01..+0,14) |
+| Fitxer original (navegador) | 2/6 (Daniel: 6 paraules de 638 diferents) | 7,29 % | 9,72 % | +0,08 s (+0,00..+0,14) |
+
+Amb la font «navegador» el resultat no pot ser idèntic: el re-mostrejador i el descodificador AAC
+del navegador no són els de Python. L'RTF depèn molt de la càrrega del PC (Daniel, 0,24–0,54 en
+dies i moments diferents): per comparar velocitats, cal passar les configuracions seguides.
 
 Per a provar-lo en un altre dispositiu de la xarxa (un mòbil, un Mac), cal servir-lo amb HTTPS o des
 de `localhost`: els navegadors només deixen fer servir diversos fils en un context segur.

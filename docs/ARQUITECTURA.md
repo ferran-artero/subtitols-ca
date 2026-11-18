@@ -571,7 +571,22 @@ vertical encerta el 34–36 % dels talls (orientatiu). Els car/s per damunt de 1
 python eines/serveix.py --models ruta/models_onnx            # web/ amb els models a /models_onnx/
 python eines/serveix.py --models ruta/models_onnx --sense-coi  # com GitHub Pages (prova el service worker)
 python eines/transcriu.py video.mp4 --models ruta/models_onnx  # el mateix motor, en Python
+python eines/serveix.py --models ruta/models_onnx --dades ruta/dades   # + banc de proves: /banc/banc.html
 ```
+
+`serveix.py` serveix `web/` a l'arrel i, a més:
+
+| Camí | Carpeta |
+|---|---|
+| `/models_onnx/` | `--models` |
+| `/banc/` | `proves/banc/` (el banc de proves al navegador) |
+| `/referencies/` | `--referencies` (per defecte `resultats/proves/motor/`, de `proves/referencia_motor.py`) |
+| `/dades/` | `--dades` o `SUBTITOLS_DADES` (els àudios originals; només per al banc) |
+| `POST /desa/…` | desa a `resultats/banc/navegador/` el que envia el banc |
+
+Rebutja els camins que surten de cada carpeta. En arrencar diu quina carpeta de dades serveix. A
+Windows, si el port ja està ocupat, falla en lloc d'obrir-ne un segon (amb `SO_REUSEADDR`, Windows
+ho permetia i les peticions continuaven anant al servidor antic).
 
 | Paràmetre de l'adreça | Efecte |
 |---|---|
